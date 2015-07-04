@@ -15,7 +15,9 @@
 Source::Source():
     _particleGun{nullptr},
     _sourceMessenger{nullptr},
-    _nof_particles{36}
+    _nof_rows{-1},
+    _nof_cols{-1},
+    _iso_radius{-1.0f}
 {
     _particleGun = new G4ParticleGun( 1 );
 
@@ -36,37 +38,55 @@ Source::~Source()
     delete _sourceMessenger;
 }
 
-double Source::sample_direction()
+void Source::prepare()
 {
-    double phi = 2.0 * M_PI * G4UniformRand();
-    return phi; // pair<double,double>(sin(phi), cos(phi))
+    _srcs.reserve(_sources.size());
+    for(auto k = 0; k != _sources.size(); ++k)
+    {
+        auto theta = _sources[k].first;
+        _srcs.emplace_back(sncsphi(sincos(sin(theta), cos(theta)), _sources[k].second * M_PI/180.0f));
+    }
+}
+
+inline float sample_angle()
+{
+    return 2.0f * float(M_PI * G4UniformRand());
+}
+
+inline std::tuple<float,float> rotate_2d(x, y, sn, cs)
+{
+    return std::make_tuple(cs*x - sn*y, sn*x + cs*y);
 }
 
 // source particle parameters, called per each source event
 void Source::GeneratePrimaries(G4Event* anEvent)
 {
-    if (! _is.good())
-        throw std::runtime_error();
-        
-    read_one_record();
+    float x, y, z, wx, wy, wz, e, w;
+
+    std::tie(x, y, z, wx, wy, wz, e, w) = read_phsf_record();
     
-    phi = sample_direction();
+    // random collimator system rotation
+    auto rndphi = sample_direction();
 
-    for(int k = 0; k != 6; ++k) // number of collimation rows
+    for(int k = 0; k != _srcs.size(); ++k) // running over all source
     {
-        // here we sample spatial decay vertex uniformly in the cylinder
-        double z   = _halfz * ( 2.0*G4UniformRand() - 1.0 );
-        double phi = 2.0 * M_PI * G4UniformRand();
-        double r   = _radius * sqrt(G4UniformRand());
+        z -= _iso_radius;        
 
-        auto x = r * cos(phi);
-        auto y = r * sin(phi);
+        auto phi = _srcs[k].second + rndphi;
+        
+        auto cs_phi = cos(phi);
+        auto sn_phi = sin(phi);
+        
+        // polar rotation
+        std::tie(y, z) = rotate_2d(y, z, _srcs[k].first.first, _srcs[k].first.second);
+        
+        // aziumth rotation
+        std::tie(x, y) = rotate_2d(x, y, cs_phi, sn_phi);
+
         _particleGun->SetParticlePosition(G4ThreeVector(x, y, z));
 
-        auto dir = sample_direction();
-        _particleGun->SetParticleMomentumDirection(G4ThreeVector(dir._wx, dir._wy, dir._wz));
+        _particleGun->SetParticleMomentumDirection(G4ThreeVector(wx, wy, wz));
        
-        auto e = sample_energy();
         _particleGun->SetParticleEnergy(e);
         
         _particleGun->GeneratePrimaryVertex(anEvent);
