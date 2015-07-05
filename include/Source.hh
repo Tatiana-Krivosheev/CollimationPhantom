@@ -11,10 +11,19 @@
 
 class G4ParticleGun;
 class G4Event;
+class G4ParticleDefinition;
+
 class SourceMessenger;
 
 class Source : public G4VUserPrimaryGeneratorAction
 {
+#pragma region Typedefs
+    // source angles, <phi, theta>
+    public: using angles  = std::pair<float,float>;
+    public: using sincos  = std::pair<float,float>;
+    public: using sncsphi = std::pair<sincos,float>;    
+#pragma endregion
+
 #pragma region Data
     private: G4ParticleGun*      _particleGun;
     private: SourceMessenger*    _sourceMessenger;
@@ -25,17 +34,18 @@ class Source : public G4VUserPrimaryGeneratorAction
     private: int                 _nof_cols;
 
     // isocentre radius
-    private: float               _iso_radius;
+    private: float               _iso_radius;    
     
-    // source angles, <phi, theta>
-    private: using angles = std::pair<float,float>;
-    private: using sincos = std::pair<float,float>;
-    private: using sncsphi = std::pair<sincos,float>;    
-    
+    // unprocessed data, as read from table
     private: std::vector<angles> _sources;
     
-    // processed source info
+    // processed source info    
     private: std::vector<sncsphi> _srcs;
+    
+    private: G4ParticleDefinition* _photon;
+    private: G4ParticleDefinition* _electron;
+    private: G4ParticleDefinition* _positron;
+    private: G4ParticleDefinition* _geantino;
 #pragma endregion
 
 #pragma region Ctor/Dtor/ops
@@ -57,6 +67,11 @@ class Source : public G4VUserPrimaryGeneratorAction
     public: float iso_radius() const
     {
         return _iso_radius;
+    }
+    
+    public: std::vector<angles> sources() const
+    {
+        return _sources;
     }
 #pragma endregion
 

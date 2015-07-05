@@ -17,13 +17,21 @@ Source::Source():
     _sourceMessenger{nullptr},
     _nof_rows{-1},
     _nof_cols{-1},
-    _iso_radius{-1.0f}
+    _iso_radius{-1.0f},
+    _photon{nullptr},
+    _electron{nullptr},
+    _positron{nullptr},
+    _geantino{nullptr}
 {
     _particleGun = new G4ParticleGun( 1 );
 
-    G4ParticleTable* particleTable = G4ParticleTable::GetParticleTable();
-    G4String particleName = "gamma"; // "geantino"
-    _particleGun->SetParticleDefinition(particleTable->FindParticle(particleName));
+    auto particleTable = G4ParticleTable::GetParticleTable();
+    _gamma    = particleTable->FindParticle("gamma");
+    _electron = particleTable->FindParticle("e-");
+    _positron = particleTable->FindParticle("e+");
+    _geantino = particleTable->FindParticle("geantino");    
+    
+    _particleGun->SetParticleDefinition(_gamma);
 
     _particleGun->SetParticlePosition(G4ThreeVector(0., 0., 0.));
     _particleGun->SetParticleMomentumDirection(G4ThreeVector(0., 0., 1.));
@@ -70,18 +78,22 @@ void Source::GeneratePrimaries(G4Event* anEvent)
 
     for(int k = 0; k != _srcs.size(); ++k) // running over all source
     {
-        z -= _iso_radius;        
+        z -= _iso_radius;
 
-        auto phi = _srcs[k].second + rndphi;
+        auto cs = _srcs[k].first.first
+        auto sn = _srcs[k].first.second;
         
-        auto cs_phi = cos(phi);
-        auto sn_phi = sin(phi);
-        
+        auto phi = _srcs[k].second + rndphi;        
+
         // polar rotation
-        std::tie(y, z) = rotate_2d(y, z, _srcs[k].first.first, _srcs[k].first.second);
+        std::tie( y,  z) = rotate_2d( y,  z, cs, sn);
+        std::tie(wy, wz) = rotate_2d(wy, wz, cs, sn);
         
         // aziumth rotation
-        std::tie(x, y) = rotate_2d(x, y, cs_phi, sn_phi);
+        cs = cos(phi);
+        sn = sin(phi);
+        std::tie( x,  y) = rotate_2d( x,  y, cs, sn);
+        std::tie(wx, wy) = rotate_2d(wx, wy, cs, sn);
 
         _particleGun->SetParticlePosition(G4ThreeVector(x, y, z));
 
