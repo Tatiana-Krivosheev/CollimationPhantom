@@ -9,10 +9,10 @@
 #include "G4LogicalVolume.hh"
 
 Phantom::Phantom():
-    G4PhantomParameterisation()
+    G4PhantomParameterisation{},
+    _colours{}
 {
     read_colour_data();
-    SetSkipEqualMaterials(false);
 }
 
 Phantom::~Phantom()
@@ -38,25 +38,24 @@ void Phantom::read_colour_data()
     {
         is >> mateName >> cred >> cgreen >> cblue >> copacity;
         G4Colour colour( cred, cgreen, cblue, copacity );
-        G4VisAttributes* visAtt = new G4VisAttributes( colour );
-        //visAtt->SetForceSolid(true);
+        G4VisAttributes* visAtt = new G4VisAttributes( colour ); // visAtt->SetForceSolid(true);
         _colours[mateName] = visAtt;
     }    
 }
 
 G4Material* Phantom::ComputeMaterial(int copyNo, G4VPhysicalVolume* physVol, const G4VTouchable*)
 {
-    G4Material* mate = G4PhantomParameterisation::ComputeMaterial( copyNo, physVol, 0 );
+    G4Material* mats = G4PhantomParameterisation::ComputeMaterial( copyNo, physVol, 0 );
     if( physVol )
     {
-        std::string mateName = mate->GetName();
-        std::string::size_type iuu = mateName.find("__");
+        std::string mat_name       = mats->GetName();
+        std::string::size_type iuu = mat_name.find("__");
         if( iuu != std::string::npos )
         {
-            mateName = mateName.substr( 0, iuu );
+            mat_name = mat_name.substr( 0, iuu );
         }
         
-        auto it = _colours.find(mateName);
+        auto it = _colours.find(mat_name);
 
         if( it == _colours.end() )
         {
@@ -66,6 +65,6 @@ G4Material* Phantom::ComputeMaterial(int copyNo, G4VPhysicalVolume* physVol, con
         physVol->GetLogicalVolume()->SetVisAttributes( it->second );
     }
     
-    return mate;
+    return mats;
 }
 
