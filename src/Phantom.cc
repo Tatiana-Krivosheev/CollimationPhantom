@@ -21,12 +21,12 @@ Phantom::~Phantom()
 
 void Phantom::read_colour_data()
 {
-    G4VisAttributes* blankAtt = new G4VisAttributes();
+    G4VisAttributes* blank = new G4VisAttributes();
     
-    blankAtt->SetVisibility( FALSE );
-    _colours["Default"] = blankAtt;
+    blank->SetVisibility( FALSE );
+    _colours["Default"] = blank;
     
-    std::string colourFile = "ColourMap.dat";
+    std::string colourFile = "ColorMap.dat";
     std::ifstream is(colourFile.c_str());
     
     int        nMate;

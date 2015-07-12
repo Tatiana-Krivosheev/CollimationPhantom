@@ -80,7 +80,7 @@ G4VPhysicalVolume* Detector::Construct()
                                          nullptr,              // no mother volume
                                          false,                // no boolean ops
                                          0,                    // copy number
-                                         _checkOverlaps);
+                                         _checkOverlaps );
                                          
         ReadPhantomData();
 
@@ -117,7 +117,6 @@ void Detector::InitialisationOfMaterials()
                                 numberofElements = 2 );
     _Air->AddElement(elN, 0.7);
     _Air->AddElement(elO, 0.3);
-
 
     // Water
     auto _Water = new G4Material( "Water",
@@ -289,16 +288,8 @@ G4Material* Detector::BuildMaterialWithChangingDensity(const G4Material* origMat
 
 void Detector::ConstructPhantomContainer()
 {
-    fNVoxelX = fZSliceHeaderMerged->GetNoVoxelX();
-    fNVoxelY = fZSliceHeaderMerged->GetNoVoxelY();
-    fNVoxelZ = fZSliceHeaderMerged->GetNoVoxelZ();
-  
-  fVoxelHalfDimX = fZSliceHeaderMerged->GetVoxelHalfX();
-  fVoxelHalfDimY = fZSliceHeaderMerged->GetVoxelHalfY();
-  fVoxelHalfDimZ = fZSliceHeaderMerged->GetVoxelHalfZ();
 #ifdef G4VERBOSE
-  G4cout << " fNVoxelX " << fNVoxelX << " fVoxelHalfDimX " << fVoxelHalfDimX 
-         <<G4endl;
+    G4cout << " fNVoxelX " << fNVoxelX << " fVoxelHalfDimX " << fVoxelHalfDimX << G4endl;
   G4cout << " fNVoxelY " << fNVoxelY << " fVoxelHalfDimY " << fVoxelHalfDimY 
          <<G4endl;
   G4cout << " fNVoxelZ " << fNVoxelZ << " fVoxelHalfDimZ " << fVoxelHalfDimZ 

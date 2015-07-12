@@ -36,10 +36,11 @@ class Source : public G4VUserPrimaryGeneratorAction
     // isocentre radius
     private: float               _iso_radius;    
     
-    // unprocessed data, as read from table
-    private: std::vector<angles> _sources;
+    // unprocessed data, as read from table,
+    // angles are in degrees
+    private: std::vector<angles>  _sources;
     
-    // processed source info    
+    // processed source info
     private: std::vector<sncsphi> _srcs;
     
     private: G4ParticleDefinition* _photon;
@@ -92,6 +93,16 @@ class Source : public G4VUserPrimaryGeneratorAction
     {
         _iso_radius = radius;
     }
+    
+    public: void set_sources(const std::vector<angles>& sources)
+    {
+        _sources.clear();
+        _sources.reserve(sources.size());
+        _sources = sources;
+        prepare_sources();
+    }
+    
+    public: void prepare_sources();
 #pragma endregion
 };
 
