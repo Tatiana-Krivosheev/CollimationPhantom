@@ -114,7 +114,7 @@ class PhantomSetup
         return _cube_z;
     }
 
-    // return linear index given 3 axial indeces
+    // return linear index given 3 axial indices
     public: int idx(int ix, int iy, int iz) const
     {
         return ix + _nofv_x*(iy + iz*_nofv_y);

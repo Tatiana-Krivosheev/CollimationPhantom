@@ -30,7 +30,7 @@ class Source : public G4VUserPrimaryGeneratorAction
 
     // number of collimator rows
     private: int                 _nof_rows;
-    // number of collimators in a row
+    // number of collimator in a row
     private: int                 _nof_cols;
 
     // isocentre radius

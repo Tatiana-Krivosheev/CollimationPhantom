@@ -18,12 +18,8 @@
 
 #include "Detector.hh"
 
-//#include "DicomRunAction.hh"
-//#include "DicomRun.hh"
-
-
 Detector::Detector():
-    G4VUserDetectorConstruction(),
+    G4VUserDetectorConstruction{},
     _Air{nullptr},
     _Water{nullptr},
 
@@ -37,7 +33,7 @@ Detector::Detector():
     
     _materials{nullptr}
 
-   _matIDs{nullptr},
+    _mat_IDs{nullptr},
 
     _nofv_x{-1},
     _nofv_y{-1},
@@ -46,6 +42,8 @@ Detector::Detector():
     _voxel_x{-1.0f},
     _voxel_y{-1.0f},
     _voxel_z{-1.0f},
+
+    _scorers{},
     
     _constructed{false}
 {
@@ -88,6 +86,7 @@ G4VPhysicalVolume* Detector::Construct()
         ConstructPhantom();
         _constructed = true;
     }
+
     return _world_phys;
 }
 
@@ -317,7 +316,9 @@ void Detector::ConstructPhantomContainer()
   G4ThreeVector posCentreVoxels(fOffsetX,fOffsetY,fOffsetZ);
 #ifdef G4VERBOSE
   G4cout << " placing voxel container volume at " << posCentreVoxels << G4endl;
-#endif_nofv_x
+#endif
+
+    _nofv_x
   fContainer_phys =
     new G4PVPlacement(0,  // rotation
                       posCentreVoxels,
@@ -364,4 +365,60 @@ void Detector::ConstructSDandField()
     }
 }
 
+void Detector::ConstructPhantom()
+{
 
+    //----- Create parameterisation
+    DicomPhantomParameterisationColour* param = new DicomPhantomParameterisationColour();
+
+    //----- Set voxel dimensions
+    param->SetVoxelDimensions( fVoxelHalfDimX, fVoxelHalfDimY, fVoxelHalfDimZ );
+
+    //----- Set number of voxels
+    param->SetNoVoxel( fNVoxelX, fNVoxelY, fNVoxelZ );
+
+    //----- Set list of materials
+    param->SetMaterials( fMaterials );
+
+    //----- Set list of material indices: for each voxel it is a number that
+    // correspond to the index of its material in the vector of materials
+    // defined above
+    param->SetMaterialIndices( fMateIDs );
+
+    //----- Define voxel logical volume
+    G4Box* voxel_solid =
+            new G4Box( "Voxel", fVoxelHalfDimX, fVoxelHalfDimY, fVoxelHalfDimZ);
+    G4LogicalVolume* voxel_logic =
+            new G4LogicalVolume(voxel_solid,fMaterials[0],"VoxelLogical",
+                                0,0,0);
+    // material is not relevant, it will be changed by the
+    // ComputeMaterial method of the parameterisation
+
+    voxel_logic->SetVisAttributes(new G4VisAttributes(G4VisAttributes::Invisible));
+
+    //--- Assign the fContainer volume of the parameterisation
+    param->BuildContainerSolid(fContainer_phys);
+
+    //--- Assure yourself that the voxels are completely filling the
+    // fContainer volume
+    param->CheckVoxelsFillContainer( fContainer_solid->GetXHalfLength(),
+                                     fContainer_solid->GetYHalfLength(),
+                                     fContainer_solid->GetZHalfLength() );
+
+
+    //----- The G4PVParameterised object that uses the created parameterisation
+    // should be placed in the fContainer logical volume
+    G4PVParameterised * phantom_phys =
+            new G4PVParameterised("phantom",voxel_logic,fContainer_logic,
+                                  kXAxis, fNVoxelX*fNVoxelY*fNVoxelZ, param);
+    // if axis is set as kUndefined instead of kXAxis, GEANT4 will
+    //  do an smart voxel optimisation
+    // (not needed if G4RegularNavigation is used)
+
+    //----- Set this physical volume as having a regular structure of type 1,
+    // so that G4RegularNavigation is used
+    phantom_phys->SetRegularStructureId(1); // if not set, G4VoxelNavigation
+    //will be used instead
+
+    SetScorer(voxel_logic);
+}

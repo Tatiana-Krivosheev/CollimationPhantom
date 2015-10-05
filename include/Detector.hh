@@ -7,8 +7,6 @@
 #include "globals.hh"
 #include "G4VUserDetectorConstruction.hh"
 
-#include <set>
-
 class G4Material;
 class G4Box;
 class G4LogicalVolume;
@@ -18,7 +16,7 @@ class Detector : public G4VUserDetectorConstruction
 #pragma region Data
     private: G4Material* _Air;
     private: G4Material* _Water;
-    
+
     // World
     private: G4Box*             _world_box;
     private: G4LogicalVolume*   _world_lv;
@@ -29,11 +27,11 @@ class Detector : public G4VUserDetectorConstruction
     private: G4VPhysicalVolume* _container_phys;
 
     private: std::vector<G4Material*> _materials;
-    
+
     // list of new materials created to distinguish different density
-    //  voxels that have the same original materials
-    
-    private: uint32_t* _matIDs; // index of material of each voxel
+    // voxels that have the same original materials
+
+    private: uint32_t* _mat_IDs; // index of material of each voxel
 
     private: int   _nofv_x;
     private: int   _nofv_y;
@@ -42,15 +40,15 @@ class Detector : public G4VUserDetectorConstruction
     private: float _voxel_x;
     private: float _voxel_y;
     private: float _voxel_z;
-    
+
     private: std::set<G4LogicalVolume*> _scorers;
-    
+
     private: bool _constructed;
 #pragma endregion
-    
+
 #pragma region Ctor/Dtor/ops
-    public: Detector();
-    public: ~Detector();
+    public:          Detector();
+    public: virtual ~Detector();
 #pragma endregion
 
 #pragma region Observers
@@ -92,7 +90,7 @@ class Detector : public G4VUserDetectorConstruction
     public: int nof_voxels() const
     {
         return _nofv_x * _nofv_y * _nofv_z;
-    }    
+    }
 #pragma endregion
 
     public: virtual G4VPhysicalVolume* Construct() override;
@@ -101,8 +99,7 @@ class Detector : public G4VUserDetectorConstruction
 
     protected: void ConstructPhantomContainer();
 
-    void SetScorer(G4LogicalVolume* voxel_logic);
+    public: void SetScorer(G4LogicalVolume* voxel_logic);
 
-    virtual void ConstructSDandField();
+    virtual void ConstructSDandField() override;
 };
-

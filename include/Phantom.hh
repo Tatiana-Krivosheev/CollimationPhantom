@@ -21,8 +21,8 @@ class Phantom : public G4PhantomParameterisation
     public: ~Phantom();
 #pragma endregion
   
-    public:  G4Material* ComputeMaterial(int repNo, G4VPhysicalVolume* curVol, const G4VTouchable* parentTouch=nullptr) override;
+    public:  G4Material* ComputeMaterial(int repNo, G4VPhysicalVolume* curVol,
+                                         const G4VTouchable* parentTouch=nullptr) override;
   
     private: void read_colour_data();
 };
-
