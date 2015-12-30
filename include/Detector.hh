@@ -7,6 +7,8 @@
 #include "globals.hh"
 #include "G4VUserDetectorConstruction.hh"
 
+#include "PhantomSetup.hh"
+
 class G4Material;
 class G4Box;
 class G4LogicalVolume;
@@ -33,13 +35,7 @@ class Detector : public G4VUserDetectorConstruction
 
     private: uint32_t* _mat_IDs; // index of material of each voxel
 
-    private: int   _nofv_x;
-    private: int   _nofv_y;
-    private: int   _nofv_z;
-
-    private: float _voxel_x;
-    private: float _voxel_y;
-    private: float _voxel_z;
+    PhantomSetup      _phs;
 
     private: std::set<G4LogicalVolume*> _scorers;
 
@@ -47,59 +43,75 @@ class Detector : public G4VUserDetectorConstruction
 #pragma endregion
 
 #pragma region Ctor/Dtor/ops
-    public:          Detector();
+    public:          Detector(const PhantomSetup& phs);
     public: virtual ~Detector();
 #pragma endregion
 
 #pragma region Observers
     public: float voxel_x() const
     {
-        return _voxel_x;
+        return _phs.voxel_x();
     }
 
     public: float voxel_y() const
     {
-        return _voxel_y;
+        return _phs.voxel_y();
     }
 
     public: float voxel_z() const
     {
-        return _voxel_z;
+        return _phs.voxel_z();
     }
 
     public: float voxel_volume() const
     {
-        return _voxel_x*_voxel_y*_voxel_z;
+        return _phs.voxel_volume();
+    }
+
+    public: float cube_x() const
+    {
+        return _phs.cube_x();
+    }
+
+    public: float cube_y() const
+    {
+        return _phs.cube_y();
+    }
+
+    public: float cube_z() const
+    {
+        return _phs.cube_z();
     }
 
     public: int nofv_x() const
     {
-        return _nofv_x;
+        return _phs.nofv_x();
     }
 
     public: int nofv_y() const
     {
-        return _nofv_y;
+        return _phs.nofv_y();
     }
 
     public: int nofv_z() const
     {
-        return _nofv_z;
+        return _phs.nofv_z();
     }
 
     public: int nof_voxels() const
     {
-        return _nofv_x * _nofv_y * _nofv_z;
+        return _phs.nof_voxels();
     }
 #pragma endregion
 
     public: virtual G4VPhysicalVolume* Construct() override;
 
-    protected: void InitialisationOfMaterials();
+    virtual void ConstructSDandField() override;
+
+    protected: void init_materials();
 
     protected: void ConstructPhantomContainer();
 
-    public: void SetScorer(G4LogicalVolume* voxel_logic);
+    public: void set_scorer(G4LogicalVolume* voxel_logic);
 
-    virtual void ConstructSDandField() override;
 };

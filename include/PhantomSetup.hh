@@ -22,17 +22,32 @@ class PhantomSetup
     public: PhantomSetup(const char *hed_name);
 
     public: PhantomSetup(const PhantomSetup& phs):
-        _nofv_x(phs._nofv_x),
-        _nofv_y(phs._nofv_y),
-        _nofv_z(phs._nofv_z),
+        _nofv_x{phs._nofv_x},
+        _nofv_y{phs._nofv_y},
+        _nofv_z{phs._nofv_z},
 
-        _voxel_x(phs._voxel_x),
-        _voxel_y(phs._voxel_y),
-        _voxel_z(phs._voxel_z),
+        _voxel_x{phs._voxel_x},
+        _voxel_y{phs._voxel_y},
+        _voxel_z{phs._voxel_z},
 
-        _cube_x(phs._cube_x),
-        _cube_y(phs._cube_y),
-        _cube_z(phs._cube_z)
+        _cube_x{phs._cube_x},
+        _cube_y{phs._cube_y},
+        _cube_z{phs._cube_z}
+    {
+    }
+
+    public: PhantomSetup(PhantomSetup&& phs):
+        _nofv_x{phs._nofv_x},
+        _nofv_y{phs._nofv_y},
+        _nofv_z{phs._nofv_z},
+
+        _voxel_x{phs._voxel_x},
+        _voxel_y{phs._voxel_y},
+        _voxel_z{phs._voxel_z},
+
+        _cube_x{phs._cube_x},
+        _cube_y{phs._cube_y},
+        _cube_z{phs._cube_z}
     {
     }
 
@@ -53,11 +68,28 @@ class PhantomSetup
         return *this;
     }
 
+    public: PhantomSetup& operator=(PhantomSetup&& phs)
+    {
+        _nofv_x = phs._nofv_x;
+        _nofv_y = phs._nofv_y;
+        _nofv_z = phs._nofv_z;
+
+        _voxel_x = phs._voxel_x;
+        _voxel_y = phs._voxel_y;
+        _voxel_z = phs._voxel_z;
+
+        _cube_x = phs._cube_x;
+        _cube_y = phs._cube_y;
+        _cube_z = phs._cube_z;
+
+        return *this;
+    }
+
     public: ~PhantomSetup()
     {
     }
 #pragma endregion
-    
+
 #pragma region Observers
     public: float voxel_x() const
     {
@@ -97,7 +129,7 @@ class PhantomSetup
     public: int nof_voxels() const
     {
         return _nofv_x * _nofv_y * _nofv_z;
-    }    
+    }
 
     public: float cube_x() const
     {
@@ -121,4 +153,3 @@ class PhantomSetup
     }
 #pragma endregion
 };
-

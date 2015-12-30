@@ -1,9 +1,5 @@
 #include "G4SystemOfUnits.hh"
 
-#include "CollimatorConstruction.hh"
-#include "CollPhysicsList.hh"
-#include "CollActionInitialization.hh"
-
 #ifdef G4MULTITHREADED
 #include "G4MTRunManager.hh"
 #else
@@ -15,7 +11,13 @@
 #include "G4VisExecutive.hh"
 #include "G4UIExecutive.hh"
 
+#include "G4GenericPhysicsList.hh"
+
 #include "Randomize.hh"
+
+#include "PhantomSetup.hh"
+#include "Detector.hh"
+#include "ActionInitialization.hh"
 
 int main(int argc, char* argv[])
 {
@@ -27,7 +29,12 @@ int main(int argc, char* argv[])
 
     // Choose the Random engine
     G4Random::setTheEngine(new CLHEP::RanecuEngine);
-  
+
+    // long long seeds[2];
+    // seeds[0] = 534524575674523LL;
+    // seeds[1] = 526345623452457LL;
+    // CLHEP::HepRandom::setTheSeeds(seeds);
+
     // Construct the default run manager
 #ifdef G4MULTITHREADED
     G4MTRunManager* runManager = new G4MTRunManager;
@@ -35,49 +42,58 @@ int main(int argc, char* argv[])
     G4RunManager* runManager = new G4RunManager;
 #endif
 
+    // Treatment of patient images before creating the G4runManager
+    auto* phs = new PhantomSetup("phantom.hed");
+
     // Set mandatory initialization classes
-    //
+
     // Detector construction
-    runManager->SetUserInitialization(new CollimatorConstruction);
+    auto* geometry = new Detector(phs);
+    runManager->SetUserInitialization(geometry);
 
     // Physics list
-    runManager->SetUserInitialization(new CollPhysicsList);
-    
-    // User action initialization
-    runManager->SetUserInitialization(new CollActionInitialization());
-  
-    // Initialize visualization
-    //
-    G4VisManager* visManager = new G4VisExecutive;
-    // G4VisExecutive can take a verbosity argument - see /vis/verbose guidance.
-    // G4VisManager* visManager = new G4VisExecutive("Quiet");
-    visManager->Initialize();
+    std::vector<string>* phs_vec = new std::vector<string>;
+    phs_vec->push_back("G4EmStandardPhysics");
+    G4VModularPhysicsList* phys = new G4GenericPhysicsList(phs_vec);
+    runManager->SetUserInitialization(phys);
 
-    // Get the pointer to the User Interface manager
+    // User action initialization
+    runManager->SetUserInitialization(new Initialization());
+
+    runManager->Initialize();
+
+#ifdef G4VIS_USE
+    // visualisation manager
+    G4VisManager* visManager = new G4VisExecutive;
+    visManager->Initialize();
+#endif
+
     G4UImanager* UImanager = G4UImanager::GetUIpointer();
 
-    // Process macro or start UI session
-    if ( !ui )
-    { 
-        // batch mode
-        G4String command = "/control/execute ";
-        G4String fileName = argv[1];
-        UImanager->ApplyCommand(command+fileName);
+    if (argc==1)
+    {
+#ifdef G4UI_USE
+        G4UIExecutive* ui = new G4UIExecutive(argc, argv);
+
+#ifdef G4VIS_USE
+        UImanager->ApplyCommand("/control/execute vis.mac");
+#endif
+        ui->SessionStart();
+        delete ui;
+#endif
     }
     else
     {
-        // interactive mode
-        UImanager->ApplyCommand("/control/execute init_vis.mac");
-        ui->SessionStart();
-        delete ui;
+        std::string command = "/control/execute ";
+        std::string fileName = argv[1];
+        UImanager->ApplyCommand(command+fileName);
     }
 
-    // Job termination
-    // Free the store: user actions, physics_list and detector_description are
-    // owned and deleted by the run manager, so they should not be deleted 
-    // in the main() program !
-  
-    delete visManager;
     delete runManager;
-}
 
+#ifdef G4VIS_USE
+    delete visManager;
+#endif
+
+    return 0;
+}

@@ -31,7 +31,7 @@ PhantomSetup::PhantomSetup(const char* hed_name):
 
     char keyword[17], thebar;
     bool read_cards = true;
- 
+
     while (read_cards)
     {
         hed_file >> keyword;
@@ -60,9 +60,9 @@ PhantomSetup::PhantomSetup(const char* hed_name):
     {
         if (_voxel_x > 0.0f && _voxel_y > 0.0f && _voxel_z > 0.0f)
         {
-            _voxel_x = _voxel_x * float(cm);
-            _voxel_y = _voxel_y * float(cm);
-            _voxel_z = _voxel_z * float(cm);
+            _voxel_x = _voxel_x * float(mm);
+            _voxel_y = _voxel_y * float(mm);
+            _voxel_z = _voxel_z * float(mm);
 
             _cube_x = _voxel_x * float(_nofv_x);
             _cube_y = _voxel_y * float(_nofv_y);
@@ -74,4 +74,3 @@ PhantomSetup::PhantomSetup(const char* hed_name):
         }
     }
 }
-
