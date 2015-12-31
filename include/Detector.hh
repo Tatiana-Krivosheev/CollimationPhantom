@@ -29,17 +29,15 @@ class Detector : public G4VUserDetectorConstruction
     private: G4VPhysicalVolume* _container_phys;
 
     private: std::vector<G4Material*> _materials;
-
     // list of new materials created to distinguish different density
     // voxels that have the same original materials
-
     private: uint32_t* _mat_IDs; // index of material of each voxel
 
-    PhantomSetup      _phs;
+    private: PhantomSetup               _phs;
 
     private: std::set<G4LogicalVolume*> _scorers;
 
-    private: bool _constructed;
+    private: bool                       _constructed;
 #pragma endregion
 
 #pragma region Ctor/Dtor/ops
@@ -110,7 +108,9 @@ class Detector : public G4VUserDetectorConstruction
 
     protected: void init_materials();
 
-    protected: void ConstructPhantomContainer();
+    protected: void make_phantom_container();
+
+    protected: void make_phantom();
 
     public: void set_scorer(G4LogicalVolume* voxel_logic);
 

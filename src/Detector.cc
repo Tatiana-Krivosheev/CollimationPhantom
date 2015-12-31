@@ -17,6 +17,7 @@
 #include "G4PSDoseDeposit3D.hh"
 
 #include "PhantomSetup.hh"
+#include "Phantom.hh"
 #include "Detector.hh"
 
 Detector::Detector(const PhantomSetup& phs):
@@ -52,7 +53,7 @@ G4VPhysicalVolume* Detector::Construct()
 {
     if( !_constructed || _world_phys == nullptr)
     {
-        InitialisationOfMaterials();
+        init_materials();
 
         //----- Build world
         double world_x = 50.0 * cm;
@@ -75,10 +76,9 @@ G4VPhysicalVolume* Detector::Construct()
                                          0,                    // copy number
                                          _checkOverlaps );
 
-        ReadPhantomData();
+        make_phantom_container();
+        make_phantom();
 
-        ConstructPhantomContainer();
-        ConstructPhantom();
         _constructed = true;
     }
 
@@ -120,224 +120,49 @@ void Detector::init_materials()
     _Water->AddElement(elO, 0.888);
 
     //----- Put the materials in a vector
-    _materials.push_back(fAir); // rho = 0.00129
-    _materials.push_back(water); // rho = 1.018
+    _materials.push_back(_Air);   // rho = 0.00129
+    _materials.push_back(_Water); // rho = 1.018
 }
 
 
-void Detector::ReadPhantomData()
+void Detector::make_phantom_container()
 {
+    // Define the volume that contains all the voxels
+    _container_solid = new G4Box("phantomContainer",
+                                  0.5*cube_x(),
+                                  0.5*cube_y(),
+                                  0.5*cube_z() );
 
-    G4String dataFile = "Data.dat";
-    std::ifstream finDF(dataFile.c_str());
-    G4String fname;
-    if(finDF.good() != 1 ) {
-        G4String descript = "Problem reading data file: "+dataFile;
-        G4Exception(" DicomDetectorConstruction::ReadPhantomData",
-                    "",
-                    FatalException,
-                    descript);
-    }
+    _container_logic = new G4LogicalVolume( _container_solid,
+                                            _Air, // material is not important, it will be fully filled by the voxels
+                                           "phantomContainer",
+                                           nullptr,   // field
+                                           nullptr,   // sensitive detector
+                                           nullptr ); // user limits
 
-    G4int compression;
-    finDF >> compression; // not used here
+    // Place it on the world
+    double offset_x = 0.0;
+    double offset_y = 0.0;
+    double offset_z = 0.0;
 
-    finDF >> fNoFiles;
-    for(G4int i = 0; i < fNoFiles; i++ ) {
-        finDF >> fname;
-        //--- Read one data file
-        fname += ".g4dcm";
-        ReadPhantomDataFile(fname);
-    }
+    G4ThreeVector pos_center_voxels( offset_x, offset_y, offset_z );
 
-    //----- Merge data headers
-    MergeZSliceHeaders();
-
-    finDF.close();
-
+    _container_phys = new G4PVPlacement( nullptr,             // rotation
+                                         pos_center_voxels,   // translation
+                                         _container_logic,    // The logic volume
+                                         "phantomContainer",  // name
+                                         _world_logic,        // mother
+                                         false,               // No op. bool.
+                                         1);                  // copy number
 }
 
-void Detector::ReadPhantomDataFile(const G4String& fname)
+void Detector::set_scorer(G4LogicalVolume* voxel_logic)
 {
-#ifdef G4VERBOSE
-  G4cout << " DicomDetectorConstruction::ReadPhantomDataFile opening file "
-         << fname << G4endl;
-#endif
-  std::ifstream fin(fname.c_str(), std::ios_base::in);
-  if( !fin.is_open() ) {
-    G4Exception("DicomDetectorConstruction::ReadPhantomDataFile",
-                "",
-                FatalErrorInArgument,
-                G4String("File not found " + fname ).c_str());
-  }
-  //----- Define density differences (maximum density difference to create
-  // a new material)
-  char* part = getenv( "DICOM_CHANGE_MATERIAL_DENSITY" );
-  G4double densityDiff = -1.;
-  if( part ) densityDiff = G4UIcommand::ConvertToDouble(part);
-  if( densityDiff != -1. ) {
-    for( unsigned int ii = 0; ii < fOriginalMaterials.size(); ii++ ){
-      fDensityDiffs[ii] = densityDiff; //currently all materials with
-      // same difference
-    }
-  }else {
-    if( fMaterials.size() == 0 ) { // do it only for first slice
-      for( unsigned int ii = 0; ii < fOriginalMaterials.size(); ii++ ){
-        fMaterials.push_back( fOriginalMaterials[ii] );
-      }
-    }
-  }
-
-  //----- Read data header
-  DicomPhantomZSliceHeader* sliceHeader = new DicomPhantomZSliceHeader( fin );
-  fZSliceHeaders.push_back( sliceHeader );
-
-  //----- Read material indices
-  G4int nVoxels = sliceHeader->GetNoVoxels();
-
-  //--- If first slice, initiliaze fMateIDs
-  if( fZSliceHeaders.size() == 1 ) {
-    //fMateIDs = new unsigned int[fNoFiles*nVoxels];
-    fMateIDs = new size_t[fNoFiles*nVoxels];
-
-  }
-
-  unsigned int mateID;
-  // number of voxels from previously read slices
-  G4int voxelCopyNo = (fZSliceHeaders.size()-1)*nVoxels;
-  for( G4int ii = 0; ii < nVoxels; ii++, voxelCopyNo++ ){
-    fin >> mateID;
-    fMateIDs[voxelCopyNo] = mateID;
-  }
-
-  //----- Read material densities and build new materials if two voxels have
-  //  same material but its density is in a different density interval
-  // (size of density intervals defined by densityDiff)
-  G4double density;
-  // number of voxels from previously read slices
-  voxelCopyNo = (fZSliceHeaders.size()-1)*nVoxels;
-  for( G4int ii = 0; ii < nVoxels; ii++, voxelCopyNo++ ){
-    fin >> density;
-
-    //-- Get material from list of original materials
-    mateID = fMateIDs[voxelCopyNo];
-    G4Material* mateOrig  = fOriginalMaterials[mateID];
-
-    //-- Get density bin: middle point of the bin in which the current
-    // density is included
-    G4String newMateName = mateOrig->GetName();
-    float densityBin = 0.;
-    if( densityDiff != -1.) {
-      densityBin = fDensityDiffs[mateID] *
-        (G4int(density/fDensityDiffs[mateID])+0.5);
-      //-- Build the new material name
-      newMateName += G4UIcommand::ConvertToString(densityBin);
-    }
-
-    //-- Look if a material with this name is already created
-    //  (because a previous voxel was already in this density bin)
-    unsigned int im;
-    for( im = 0; im < fMaterials.size(); im++ ){
-      if( fMaterials[im]->GetName() == newMateName ) {
-        break;
-      }
-    }
-    //-- If material is already created use index of this material
-    if( im != fMaterials.size() ) {
-      fMateIDs[voxelCopyNo] = im;
-      //-- else, create the material
-    } else {
-      if( densityDiff != -1.) {
-        fMaterials.push_back( BuildMaterialWithChangingDensity( mateOrig,
-                                                  densityBin, newMateName ) );
-        fMateIDs[voxelCopyNo] = fMaterials.size()-1;
-      } else {
-        G4cerr << " im " << im << " < " << fMaterials.size() << " name "
-               << newMateName << G4endl;
-        G4Exception("DicomDetectorConstruction::ReadPhantomDataFile",
-                    "",
-                    FatalErrorInArgument,
-                    "Wrong index in material"); //it should never reach here
-      }
-    }
-  }
-
-}
-
-G4Material* Detector::BuildMaterialWithChangingDensity(const G4Material* origMate, float density, G4String newMateName)
-{
-  //----- Copy original material, but with new density
-  G4int nelem = origMate->GetNumberOfElements();
-  G4Material* mate = new G4Material( newMateName, density*g/cm3, nelem,
-                                     kStateUndefined, STP_Temperature );
-
-  for( G4int ii = 0; ii < nelem; ii++ ){
-    G4double frac = origMate->GetFractionVector()[ii];
-    G4Element* elem = const_cast<G4Element*>(origMate->GetElement(ii));
-    mate->AddElement( elem, frac );
-  }
-
-  return mate;
-}
-
-void Detector::ConstructPhantomContainer()
-{
-#ifdef G4VERBOSE
-    G4cout << " fNVoxelX " << fNVoxelX << " fVoxelHalfDimX " << fVoxelHalfDimX << G4endl;
-  G4cout << " fNVoxelY " << fNVoxelY << " fVoxelHalfDimY " << fVoxelHalfDimY
-         <<G4endl;
-  G4cout << " fNVoxelZ " << fNVoxelZ << " fVoxelHalfDimZ " << fVoxelHalfDimZ
-         <<G4endl;
-  G4cout << " totalPixels " << fNVoxelX*fNVoxelY*fNVoxelZ <<  G4endl;
-#endif
-
-  //----- Define the volume that contains all the voxels
-  fContainer_solid = new G4Box("phantomContainer",fNVoxelX*fVoxelHalfDimX,
-                               fNVoxelY*fVoxelHalfDimY,
-                               fNVoxelZ*fVoxelHalfDimZ);
-  fContainer_logic =
-    new G4LogicalVolume( fContainer_solid,
-   //the material is not important, it will be fully filled by the voxels
-                         fMaterials[0],
-                         "phantomContainer",
-                         0, 0, 0 );
-  //--- Place it on the world
-  G4double fOffsetX = (fZSliceHeaderMerged->GetMaxX() +
-                       fZSliceHeaderMerged->GetMinX() ) /2.;
-  G4double fOffsetY = (fZSliceHeaderMerged->GetMaxY() +
-                       fZSliceHeaderMerged->GetMinY() ) /2.;
-  G4double fOffsetZ = (fZSliceHeaderMerged->GetMaxZ() +
-                       fZSliceHeaderMerged->GetMinZ() ) /2.;
-  G4ThreeVector posCentreVoxels(fOffsetX,fOffsetY,fOffsetZ);
-#ifdef G4VERBOSE
-  G4cout << " placing voxel container volume at " << posCentreVoxels << G4endl;
-#endif
-
-    _nofv_x
-  fContainer_phys =
-    new G4PVPlacement(0,  // rotation
-                      posCentreVoxels,
-                      fContainer_logic,     // The logic volume
-                      "phantomContainer",  // Name
-                      fWorld_logic,  // Mother
-                      false,           // No op. bool.
-                      1);              // Copy number
-
-  //fContainer_logic->SetVisAttributes(new G4VisAttributes(G4Colour(1.,0.,0.)));
-}
-
-void Detector::SetScorer(G4LogicalVolume* voxel_logic)
-{
-    std::cout << "\n\n\n\n\t SET SCORER : " << _voxel_logic->GetName()
-              << " \n\n\n" << G4endl;
-
     _scorers.insert(_voxel_logic);
 }
 
 void Detector::ConstructSDandField()
 {
-    std::cout << "\n\n\n\n\t CONSTRUCT SD AND FIELD \n\n\n" << G4endl;
-
     // Sensitive Detector Name
     std::string concreteSDname = "phantomSD";
     std::vector<std::tring> scorer_names;
@@ -360,32 +185,31 @@ void Detector::ConstructSDandField()
     }
 }
 
-void Detector::ConstructPhantom()
+void Detector::make_phantom()
 {
-
     //----- Create parameterisation
-    DicomPhantomParameterisationColour* param = new DicomPhantomParameterisationColour();
+    Phantom* phantom = new Phantom();
 
     //----- Set voxel dimensions
-    param->SetVoxelDimensions( fVoxelHalfDimX, fVoxelHalfDimY, fVoxelHalfDimZ );
+    phantom->SetVoxelDimensions( 0.5 * _phs.voxel_x(), 0.5 * _phs.voxel_y(), 0.5 * _phs.voxel_z() );
 
     //----- Set number of voxels
-    param->SetNoVoxel( fNVoxelX, fNVoxelY, fNVoxelZ );
+    param->SetNoVoxel( _phs.nofv_x(), _phs.nofv_y(), _phs.nofv_z() );
 
     //----- Set list of materials
-    param->SetMaterials( fMaterials );
+    param->SetMaterials( _materials );
 
     //----- Set list of material indices: for each voxel it is a number that
     // correspond to the index of its material in the vector of materials
     // defined above
-    param->SetMaterialIndices( fMateIDs );
+    param->SetMaterialIndices( _mat_IDs );
 
     //----- Define voxel logical volume
-    G4Box* voxel_solid =
-            new G4Box( "Voxel", fVoxelHalfDimX, fVoxelHalfDimY, fVoxelHalfDimZ);
-    G4LogicalVolume* voxel_logic =
-            new G4LogicalVolume(voxel_solid,fMaterials[0],"VoxelLogical",
-                                0,0,0);
+    G4Box* voxel_solid = new G4Box( "Voxel", fVoxelHalfDimX, fVoxelHalfDimY, fVoxelHalfDimZ);
+    G4LogicalVolume* voxel_logic =  new G4LogicalVolume(voxel_solid,
+                                                        fMaterials[0],
+                                                        "VoxelLogical",
+                                                        0,0,0);
     // material is not relevant, it will be changed by the
     // ComputeMaterial method of the parameterisation
 
@@ -403,7 +227,7 @@ void Detector::ConstructPhantom()
 
     //----- The G4PVParameterised object that uses the created parameterisation
     // should be placed in the fContainer logical volume
-    G4PVParameterised * phantom_phys = new G4PVParameterised("phantom",voxel_logic,fContainer_logic,
+    G4PVParameterised * phantom_phys = new G4PVParameterised("phantom", voxel_logic, fContainer_logic,
                                                               kXAxis, fNVoxelX*fNVoxelY*fNVoxelZ, param);
     // if axis is set as kUndefined instead of kXAxis, GEANT4 will
     //  do an smart voxel optimisation
