@@ -14,4 +14,3 @@ class Initialization : public G4VUserActionInitialization
     public: virtual void Build() const override;
 #pragma endregion
 };
-
