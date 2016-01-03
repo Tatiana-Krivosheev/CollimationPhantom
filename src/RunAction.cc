@@ -21,7 +21,7 @@ DicomRunAction* DicomRunAction::Instance()
 RunAction::RunAction():
     G4UserRunAction(),
     _run{nullptr},
-    fFieldValue{14}
+    _field_width{14}
 {
     _SDName.push_back(std::string("phantomSD"));
     _instance = this;
@@ -54,7 +54,7 @@ void RunAction::BeginOfRunAction(const G4Run* aRun)
     G4RunManager::GetRunManager()->SetRandomNumberStore(false);
 }
 
-void DicomRunAction::EndOfRunAction(const G4Run* aRun)
+void RunAction::EndOfRunAction(const G4Run* aRun)
 {
     int nofEvents = aRun->GetNumberOfEvent();
 
@@ -64,23 +64,22 @@ void DicomRunAction::EndOfRunAction(const G4Run* aRun)
     static double local_total_dose = 0.0;
     double total_dose              = 0.0;
 
-    const Run* reRun = static_cast<const Run*>(aRun);
+    const Run* run = static_cast<const Run*>(aRun);
 
     //--- Dump all scored quantities involved in Run.
-    for ( int i = 0; i < (int)_SDName.size(); i++ )
+    for ( size_t i = 0; i != _SDName.size(); ++i )
     {
-        //
         //---------------------------------------------
         // Dump accumulated quantities for this RUN.
         //  (Display only central region of x-y plane)
         //      0       ConcreteSD/DoseDeposit
         //---------------------------------------------
-        G4THitsMap<G4double>* DoseDeposit = reRun->GetHitsMap(_SDName[i]+"/DoseDeposit");
+        G4THitsMap<G4double>* DoseDeposit = run->GetHitsMap(_SDName[i]+"/DoseDeposit");
 
         if( DoseDeposit && DoseDeposit->GetMap()->size() != 0 )
         {
-            std::map<G4int,G4double*>::iterator itr = DoseDeposit->GetMap()->begin();
-            for(; itr != DoseDeposit->GetMap()->end(); itr++)
+            std::map<int, G4double*>::iterator itr = DoseDeposit->GetMap()->begin();
+            for(; itr != DoseDeposit->GetMap()->end(); ++itr)
             {
                 if(!IsMaster())
                 {
@@ -93,123 +92,120 @@ void DicomRunAction::EndOfRunAction(const G4Run* aRun)
 
     if (IsMaster())
     {
-      G4cout
-        << "\n--------------------End of Global Run-----------------------"
-        << " \n The run was " << nofEvents << " events " << G4endl;
-      G4cout << "LOCAL TOTAL DOSE : \t" << local_total_dose/gray
-             << " Gy" << std::endl;
-      G4cout << "      TOTAL DOSE : \t" << total_dose/gray
-             << " Gy" << std::endl;
-
+        std::cout << "\n--------------------End of Global Run-----------------------"
+                  << " \n The run was " << nofEvents << " events " << std::endl;
+        std::cout << "LOCAL TOTAL DOSE : \t" << local_total_dose/gray << " Gy" << std::endl;
+        std::cout << "      TOTAL DOSE : \t" << total_dose/gray << " Gy" << std::endl;
     }
-  else
+    else
     {
-      G4cout
-        << "\n--------------------End of Local Run------------------------"
-        << " \n The run was " << nofEvents << G4endl;
-      G4cout << "LOCAL TOTAL DOSE : \t" << local_total_dose/gray
-             << " Gy" << std::endl;
-      G4cout << "      TOTAL DOSE : \t" << total_dose/gray
-             << " Gy" << std::endl;
-
+        std::cout << "\n--------------------End of Local Run------------------------"
+                  << " \n The run was " << nofEvents << std::endl;
+        std::cout << "LOCAL TOTAL DOSE : \t" << local_total_dose/gray << " Gy" << std::endl;
+        std::cout << "      TOTAL DOSE : \t" << total_dose/gray << " Gy" << std::endl;
     }
 
-  if(IsMaster()) {
-    G4cout << " ###### EndOfRunAction ###### " << G4endl;
-    //- DicomRun object.
-    const DicomRun* re02Run = static_cast<const DicomRun*>(aRun);
-    //--- Dump all scored quantities involved in DicomRun.
+    if(IsMaster())
+    {
+        std::cout << " ###### EndOfRunAction ###### " << std::endl;
 
-    for ( G4int i = 0; i < (G4int)fSDName.size(); i++ ){
-      //
-      //---------------------------------------------
-      // Dump accumulated quantities for this RUN.
-      //  (Display only central region of x-y plane)
-      //      0       ConcreteSD/DoseDeposit
-      //---------------------------------------------
-      G4THitsMap<G4double>* DoseDeposit =
-        re02Run->GetHitsMap(fSDName[i]+"/DoseDeposit");
+        const Run* re02Run = static_cast<const Run*>(aRun);
+        //--- Dump all scored quantities involved in DicomRun.
 
-      G4cout << "============================================================="
-             <<G4endl;
-      G4cout << " Number of event processed : "
-             << aRun->GetNumberOfEvent() << G4endl;
-      G4cout << "============================================================="
-             <<G4endl;
+        for ( size_t i = 0; i != fSDName.size(); ++i )
+        {
+        //---------------------------------------------
+        // Dump accumulated quantities for this RUN.
+        //  (Display only central region of x-y plane)
+        //      0       ConcreteSD/DoseDeposit
+        //---------------------------------------------
+            G4THitsMap<G4double>* DoseDeposit = re02Run->GetHitsMap(fSDName[i]+"/DoseDeposit");
 
-      std::ofstream fileout;
-      G4String fname = "dicom.out";
-      fileout.open(fname);
-      G4cout << " opened file " << fname << " for dose output" << G4endl;
+            std::cout << "=============================================================" << std::endl;
+            std::cout << " Number of event processed : " << aRun->GetNumberOfEvent() << std::endl;
+            std::cout << "=============================================================" << std::endl;
 
+            std::ofstream fileout;
+            std::string fname = "zzz.out";
+            fileout.open(fname);
 
-      if( DoseDeposit && DoseDeposit->GetMap()->size() != 0 ) {
-        std::ostream *myout = &G4cout;
-        PrintHeader(myout);
-        std::map<G4int,G4double*>::iterator itr =DoseDeposit->GetMap()->begin();
-        for(; itr != DoseDeposit->GetMap()->end(); itr++) {
-          fileout <<  itr->first
-                  << "     "  << *(itr->second)/CLHEP::gray
-                  << G4endl;
-          G4cout << "    " << itr->first
-                 << "     " << std::setprecision(6)
-                 << *(itr->second)/CLHEP::gray << " Gy"
-                 << G4endl;
+            std::cout << " opened file " << fname << " for dose output" << std::endl;
+
+            if( DoseDeposit && DoseDeposit->GetMap()->size() != 0 )
+            {
+                std::ostream *myout = &std::cout;
+                print_header(myout);
+
+                std::map<G4int,G4double*>::iterator itr =DoseDeposit->GetMap()->cbegin();
+                for(; itr != DoseDeposit->GetMap()->cend(); ++itr)
+                {
+                    fileout <<  itr->first
+                            << "     "  << *(itr->second)/CLHEP::gray
+                            << std::endl;
+                    std::cout << "    " << itr->first
+                              << "     " << std::setprecision(6)
+                              << *(itr->second)/CLHEP::gray << " Gy"
+                              << std::endl;
+                }
+                std::cout << "=============================================" << std::endl;
+            }
+            else
+            {
+                G4Exception("DicomRunAction", "000", JustWarning,
+                            "DoseDeposit HitsMap is either a null pointer of the HitsMap was empty");
+            }
+
+            fileout.close();
+            std::cout << " closed file " << fname << " for dose output" << std::endl;
         }
-        G4cout << "============================================="<<G4endl;
-            } else {
-        G4Exception("DicomRunAction", "000", JustWarning,
-      "DoseDeposit HitsMap is either a null pointer of the HitsMap was empty");
-      }
-      fileout.close();
-      G4cout << " closed file " << fname << " for dose output" << G4endl;
-
     }
-  }
 
-  G4cout << "Finished : End of Run Action " << aRun->GetRunID() << G4endl;
-
+    std::cout << "Finished : End of Run Action " << aRun->GetRunID() << std::endl;
 }
 
-void DicomRunAction::PrintHeader(std::ostream *out)
+void RunAction::print_header(std::ostream *out)
 {
-  std::vector<G4String> vecScoreName;
-  vecScoreName.push_back("DoseDeposit");
+    std::vector<std::string> vecScoreName;
+    vecScoreName.push_back("DoseDeposit");
 
-  // head line
-  //
-  std::string vname;
-  *out << std::setw(10) << "Voxel" << " |";
-  for (std::vector<G4String>::iterator it = vecScoreName.begin();
-       it != vecScoreName.end(); it++) {
-    //vname = FillString((*it),
-    //                       ' ',
-    //                       FieldValue+1,
-    //                       false);
-    //    *out << vname << '|';
-    *out << std::setw(fFieldValue) << (*it) << "  |";
-  }
-  *out << G4endl;
+    // head line
+    std::string vname;
+    *out << std::setw(10) << "Voxel" << " |";
+
+    for (auto it = vecScoreName.cbegin(); it != vecScoreName.cend(); ++it)
+    {
+        //vname = FillString((*it),
+        //                       ' ',
+        //                       FieldValue+1,
+        //                       false);
+        //    *out << vname << '|';
+        *out << std::setw(_field_width) << (*it) << "  |";
+    }
+    *out << std::endl;
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-std::string DicomRunAction::FillString(const std::string &name,
-                                       char c, G4int n, G4bool back)
+std::string RunAction::fill_string(const std::string &name,
+                                   char c, int n, bool back)
 {
-  std::string fname("");
-  G4int k = n - name.size();
-  if (k > 0) {
-    if (back) {
-      fname = name;
-      fname += std::string(k,c);
+    std::string fname("");
+    int k = n - name.size();
+    if (k > 0)
+    {
+        if (back)
+        {
+            fname = name;
+            fname += std::string(k, c);
+        }
+        else
+        {
+            fname = std::string(k, c);
+            fname += name;
+        }
     }
-    else {
-      fname = std::string(k,c);
-      fname += name;
+    else
+    {
+        fname = name;
     }
-  }
-  else {
-    fname = name;
-  }
-  return fname;
+
+    return fname;
 }

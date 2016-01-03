@@ -1,0 +1,92 @@
+#pragma once
+
+#include <string>
+#include <vector>
+#include <iostream>
+
+#include "G4Run.hh"
+#include "G4Event.hh"
+
+#include "G4THitsMap.hh"
+
+//---------------------------------------------------------------------
+/// Run class
+///
+/// Example implementation for multi-functional-detector and primitive scorer.
+/// This Run class has collections which accumulate
+/// a event information into a run information.
+//---------------------------------------------------------------------
+
+class Run : public G4Run
+{
+#pragma region Data
+    private: std::vector<G4String>             _CollName;
+    private: std::vector<G4int>                _CollID;
+    private: std::vector<G4THitsMap<double>*>  _RunMap;
+#pragma endregion
+
+#pragma region Ctor/Dtor/ops
+    public: Run();
+    public: Run(const std::vector<std::string> mfdName);
+    public: virtual ~Run();
+#pragma endregion
+
+#pragma region Interfaces
+    public:  virtual void RecordEvent(const G4Event*) override;
+#pragma endregion
+
+#pragma region Observers
+    // Access methods for scoring information.
+    // - Number of HitsMap for this RUN.
+    //   This is equal to number of collections.
+    int GetNumberOfHitsMap() const
+    {
+        return fRunMap.size();
+    }
+
+    // - Get HitsMap of this RUN.
+    //   by sequential number, by multifucntional name and collection name,
+    //   and by collection name with full path.
+    G4THitsMap<double>* GetHitsMap(int i) const {return fRunMap[i];}
+
+    G4THitsMap<double>* GetHitsMap(const std::string& detName, const std::string& colName) const;
+
+    G4THitsMap<double>* GetHitsMap(const std::string& fullName) const;
+
+    void ConstructMFD(const std::vector<std::string>&);
+
+    virtual void Merge(const G4Run*);
+#pragma endregion
+};
+
+//==========================================================================
+//          Generic Functions to help with merge
+//==========================================================================
+template <typename T> inline void copy(std::vector<T>& main, const std::vector<T>& data)
+{
+    for(auto i = main.size(); i != data.size(); ++i)
+    {
+        main.push_back(data.at(i));
+    }
+}
+
+template <typename T> inline unsigned copy(std::vector<T*>& main, const std::vector<T*>& data)
+{
+    auto size_diff = data.size() - main.size();
+    for(auto i = main.size(); i < data.size(); ++i)
+    {
+        main.push_back(new T(*data.at(i)));
+    }
+    return size_diff;
+}
+
+template <typename T> inline std::ostream& print(const std::vector<T>& data, std::ostream& os)
+{
+    os << std::endl;
+    for(size_t i = 0; i != data.size(); ++i)
+    {
+        os << "\t\t" << i << " \t\t " << data.at(i) << std::endl;
+    }
+    os << std::endl;
+    return os;
+}

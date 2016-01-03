@@ -30,14 +30,14 @@ Source::Source():
     _gamma    = particleTable->FindParticle("gamma");
     _electron = particleTable->FindParticle("e-");
     _positron = particleTable->FindParticle("e+");
-    _geantino = particleTable->FindParticle("geantino");    
-    
+    _geantino = particleTable->FindParticle("geantino");
+
     _particleGun->SetParticleDefinition(_gamma);
 
     _particleGun->SetParticlePosition(G4ThreeVector(0., 0., 0.));
     _particleGun->SetParticleMomentumDirection(G4ThreeVector(0., 0., 1.));
     _particleGun->SetParticleEnergy(1000.0*MeV);
-    
+
     _sourceMessenger = new SourceMessenger(this);
 }
 
@@ -55,7 +55,7 @@ void Source::prepare_sources()
     {
         auto theta = _sources[k].first  * M_PI/180.0f;
         auto phi   = _sources[k].second * M_PI/180.0f;
-        
+
         _srcs.emplace_back(sncsphi(sincos(sin(theta), cos(theta)), phi));
     }
 }
@@ -66,7 +66,7 @@ static double sample_energy()
 {
     if (G4UniformRand() < 0.5)
         return 1.33*MeV;
-        
+
     return 1.17*MeV;
 }
 
@@ -87,14 +87,14 @@ static std::tuple<double,double,double,double,double,double,double,double> gener
     auto cos_theta = sample_polar();
     auto sin_theta = sqrt((1.0 - cos_theta)*(1.0 + cos_theta));
     auto phi       = 2.0 * M_PI * G4UniformRand();
-    
+
     auto wx = sin_theta*cos(phi);
     auto wy = sin_theta*sin(phi);
     auto wz = cos_theta;
-    
+
     auto e = sample_energy();
     auto w = 1.0;
-    
+
     return std::make_tuple(w, e, x, y, z, wx, wy, wz);
 }
 // end-of-source
@@ -115,28 +115,28 @@ void Source::GeneratePrimaries(G4Event* anEvent)
     double x, y, z;
     double wx, wy, wz;
     double w, e;
-    
+
     std::tie(w, e, x, y, z, wx, wy, wz) = generate_particle();
-    
+
     // random collimator system rotation
     auto rndphi = sample_rotangle();
-    
+
     for(int k = 0; k != _srcs.size(); ++k) // running over all source
     {
         double xx, yy, zz;
         double wxx, wyy, wzz;
-        
+
         zz = z + _iso_radius; // move point forward
 
         auto sn = _srcs[k].first.first
         auto cs = _srcs[k].first.second;
-        
-        auto phi = _srcs[k].second + rndphi;        
+
+        auto phi = _srcs[k].second + rndphi;
 
         // polar rotation, around X axis
         std::tie( zz, yy)  = rotate_2d( z,  y, sn, cs);
         std::tie(wzz, wyy) = rotate_2d(wz, wy, sn, cs);
-        
+
         // aziumth rotation, around Z axis
         sn = sin(phi);
         cs = cos(phi);
@@ -147,10 +147,9 @@ void Source::GeneratePrimaries(G4Event* anEvent)
 
         // reflect direction
         _particleGun->SetParticleMomentumDirection(G4ThreeVector(-wxx, -wyy, -wzz));
-       
+
         _particleGun->SetParticleEnergy(e);
-        
+
         _particleGun->GeneratePrimaryVertex(anEvent);
     }
 }
-

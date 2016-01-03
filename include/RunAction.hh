@@ -10,13 +10,15 @@ class Run;
 
 class RunAction : public G4UserRunAction
 {
-#pragma region Data
+#pragma region Singleton
     private: static RunAction* _instance;
+#pragma endregion
 
-    private: Run* _run;
+#pragma region Data
+    private: Run*                    _run;
 
-    private: std::vector<std::tring> fSDName; // - vector of MultiFunctionalDetecor names.
-    private: int _field_value;
+    private: std::vector<std::tring> _SDName; // - vector of MultiFunctionalDetecor names.
+    private: int                     _field_width;
 #pragma endregion
 
 #pragma region Ctor/Dtor/ops
@@ -30,6 +32,7 @@ class RunAction : public G4UserRunAction
 
 #pragma region Interfaces
     public: virtual G4Run* GenerateRun() override;
+
     public: virtual void BeginOfRunAction(const G4Run*) override;
     public: virtual void EndOfRunAction(const G4Run*) override;
 #pragma endregion
@@ -39,6 +42,6 @@ class RunAction : public G4UserRunAction
         return _run;
     }
 
-    public: void PrintHeader(std::ostream *out);
-    public: std::string FillString(const std::string &name, char c, int n, bool back=true);
+    public: void print_header(std::ostream *out);
+    public: std::string fill_string(const std::string &name, char c, int n, bool back=true);
 };
