@@ -5,16 +5,16 @@
 ///  scored using G4MutiFunctionalDetector and G4VPrimitiveScorer.
 ///  Accumulation is done using G4THitsMap object.
 ///
-///  The constructor DicomRun(const std::vector<std::string> mfdName)
+///  The constructor Run(const std::vector<std::string> mfdName)
 ///  needs a vector filled with MultiFunctionalDetector names which
 ///  was assigned at instantiation of MultiFunctionalDetector(MFD).
-///  Then DicomRun constructor automatically scans primitive scorers
+///  Then Run constructor automatically scans primitive scorers
 ///  in the MFD, and obtains collectionIDs of all collections associated
 ///  to those primitive scorers. Futhermore, the G4THitsMap objects
 ///  for accumulating during a RUN are automatically created too.
 ///  (*) Collection Name is same as primitive scorer name.
 ///
-///  The resultant information is kept inside DicomRun objects as data members.
+///  The resultant information is kept inside Run objects as data members.
 ///  std::vector<std::string> fCollName;            // Collection Name,
 ///  std::vector<int> fCollID;                 // Collection ID,
 ///  std::vector<G4THitsMap<G4double>*> fRunMap; // HitsMap for RUN.
@@ -125,8 +125,8 @@ void Run::RecordEvent(const G4Event* aEvent)
     //=======================================================
     // Sum up HitsMap of this Event  into HitsMap of this RUN
     //=======================================================
-    int Ncol = fCollID.size();
-    for ( int i = 0; i != Ncol ; ++i )  // Loop over HitsCollection
+    auto Ncol = _CollID.size();
+    for ( decltype(Ncol) i = 0; i != Ncol ; ++i )  // Loop over HitsCollection
     {
         G4THitsMap<double>* EvtMap = 0;
         if ( _CollID[i] >= 0 )           // Collection is attached to HCE
@@ -150,7 +150,7 @@ void Run::RecordEvent(const G4Event* aEvent)
 // Merge hits map from threads
 void Run::Merge(const G4Run* aRun)
 {
-    const Run* localRun = static_cast<const DicomRun*>(aRun);
+    const Run* localRun = static_cast<const Run*>(aRun);
     copy(_CollName, localRun->_CollName);
     copy(_CollID, localRun->_CollID);
 
@@ -184,12 +184,12 @@ G4THitsMap<double>* Run::GetHitsMap(const std::string& detName,
 //    <MultiFunctional Detector Name>/<Primitive Scorer Name>
 G4THitsMap<double>* Run::GetHitsMap(const std::string& fullName) const
 {
-    int Ncol = fCollName.size();
-    for ( int i = 0; i < Ncol; i++)
+    auto Ncol = _CollName.size();
+    for( decltype(Ncol) i = 0; i != Ncol; ++i)
     {
-        if ( fCollName[i] == fullName )
+        if ( _CollName[i] == fullName )
         {
-            return fRunMap[i];
+            return _RunMap[i];
         }
     }
 

@@ -1,8 +1,9 @@
-#include "RunAction.hh"
-#include "Run.hh"
-
 #include <fstream>
 #include <iomanip>
+#include <string>
+
+#include "RunAction.hh"
+#include "Run.hh"
 
 #include "G4THitsMap.hh"
 
@@ -13,7 +14,7 @@
 
 RunAction* RunAction::_instance = nullptr;
 
-DicomRunAction* DicomRunAction::Instance()
+RunAction* RunAction::Instance()
 {
     return _instance;
 }
@@ -38,7 +39,7 @@ G4Run* RunAction::GenerateRun()
     // Generate new RUN object, which is specially
     // dedicated for MultiFunctionalDetector scheme.
     // Detail description can be found in the Run.hh/cc.
-    // return new Run(fSDName);
+    // return new Run(_SDName);
     if (_run)
         delete _run;
 
@@ -78,8 +79,8 @@ void RunAction::EndOfRunAction(const G4Run* aRun)
 
         if( DoseDeposit && DoseDeposit->GetMap()->size() != 0 )
         {
-            std::map<int, G4double*>::iterator itr = DoseDeposit->GetMap()->begin();
-            for(; itr != DoseDeposit->GetMap()->end(); ++itr)
+            auto itr = DoseDeposit->GetMap()->cbegin();
+            for(; itr != DoseDeposit->GetMap()->cend(); ++itr)
             {
                 if(!IsMaster())
                 {
@@ -112,14 +113,14 @@ void RunAction::EndOfRunAction(const G4Run* aRun)
         const Run* re02Run = static_cast<const Run*>(aRun);
         //--- Dump all scored quantities involved in DicomRun.
 
-        for ( size_t i = 0; i != fSDName.size(); ++i )
+        for ( size_t i = 0; i != _SDName.size(); ++i )
         {
         //---------------------------------------------
         // Dump accumulated quantities for this RUN.
         //  (Display only central region of x-y plane)
         //      0       ConcreteSD/DoseDeposit
         //---------------------------------------------
-            G4THitsMap<G4double>* DoseDeposit = re02Run->GetHitsMap(fSDName[i]+"/DoseDeposit");
+            G4THitsMap<G4double>* DoseDeposit = re02Run->GetHitsMap(_SDName[i]+"/DoseDeposit");
 
             std::cout << "=============================================================" << std::endl;
             std::cout << " Number of event processed : " << aRun->GetNumberOfEvent() << std::endl;
@@ -136,7 +137,7 @@ void RunAction::EndOfRunAction(const G4Run* aRun)
                 std::ostream *myout = &std::cout;
                 print_header(myout);
 
-                std::map<G4int,G4double*>::iterator itr =DoseDeposit->GetMap()->cbegin();
+                auto itr = DoseDeposit->GetMap()->cbegin();
                 for(; itr != DoseDeposit->GetMap()->cend(); ++itr)
                 {
                     fileout <<  itr->first

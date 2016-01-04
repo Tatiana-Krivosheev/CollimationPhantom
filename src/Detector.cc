@@ -4,6 +4,7 @@
 #include "G4LogicalVolume.hh"
 #include "G4VPhysicalVolume.hh"
 #include "G4PVPlacement.hh"
+#include "G4PVParameterised.hh"
 #include "G4Material.hh"
 #include "G4Element.hh"
 #include "G4UIcommand.hh"
@@ -41,7 +42,9 @@ Detector::Detector(const PhantomSetup& phs):
 
     _scorers{},
 
-    _constructed{false}
+    _constructed{false},
+
+    _checkOverlaps{true}
 {
 }
 
@@ -91,31 +94,31 @@ void Detector::init_materials()
     double z, a, density;
     std::string name, symbol;
 
-    G4Element* elC = new G4Element( name = "Carbon",
-                                   symbol = "C",
-                                   z = 6.0, a = 12.011 * g/mole );
+//    G4Element* elC = new G4Element( name = "Carbon",
+//                                    symbol = "C",
+//                                    z = 6.0, a = 12.011 * g/mole );
     G4Element* elH = new G4Element( name = "Hydrogen",
-                                   symbol = "H",
-                                   z = 1.0, a = 1.008  * g/mole );
+                                    symbol = "H",
+                                    z = 1.0, a = 1.008  * g/mole );
     G4Element* elN = new G4Element( name = "Nitrogen",
-                                   symbol = "N",
-                                   z = 7.0, a = 14.007 * g/mole );
+                                    symbol = "N",
+                                    z = 7.0, a = 14.007 * g/mole );
     G4Element* elO = new G4Element( name = "Oxygen",
-                                   symbol = "O",
-                                   z = 8.0, a = 16.00  * g/mole );
+                                    symbol = "O",
+                                    z = 8.0, a = 16.00  * g/mole );
 
     int numberofElements = -1;
     // Air
-    auto _Air = new G4Material( "Air",
-                                1.290*mg/cm3,
-                                numberofElements = 2 );
+    _Air = new G4Material( "Air",
+                           1.290*mg/cm3,
+                           numberofElements = 2 );
     _Air->AddElement(elN, 0.7);
     _Air->AddElement(elO, 0.3);
 
     // Water
-    auto _Water = new G4Material( "Water",
-                                  density = 1.0*g/cm3,
-                                  numberofElements = 2 );
+    _Water = new G4Material( "Water",
+                             density = 1.0*g/cm3,
+                             numberofElements = 2 );
     _Water->AddElement(elH, 0.112);
     _Water->AddElement(elO, 0.888);
 
@@ -124,21 +127,20 @@ void Detector::init_materials()
     _materials.push_back(_Water); // rho = 1.018
 }
 
-
 void Detector::make_phantom_container()
 {
     // Define the volume that contains all the voxels
-    _container_solid = new G4Box("phantomContainer",
+    _container_solid = new G4Box{"phantomContainer",
                                   0.5*cube_x(),
                                   0.5*cube_y(),
-                                  0.5*cube_z() );
+                                  0.5*cube_z() };
 
-    _container_logic = new G4LogicalVolume( _container_solid,
+    _container_logic = new G4LogicalVolume{ _container_solid,
                                             _Air, // material is not important, it will be fully filled by the voxels
                                            "phantomContainer",
                                            nullptr,   // field
                                            nullptr,   // sensitive detector
-                                           nullptr ); // user limits
+                                           nullptr }; // user limits
 
     // Place it on the world
     double offset_x = 0.0;
@@ -153,19 +155,19 @@ void Detector::make_phantom_container()
                                          "phantomContainer",  // name
                                          _world_logic,        // mother
                                          false,               // No op. bool.
-                                         1);                  // copy number
+                                         1 );                 // copy number
 }
 
 void Detector::set_scorer(G4LogicalVolume* voxel_logic)
 {
-    _scorers.insert(_voxel_logic);
+    _scorers.insert(voxel_logic);
 }
 
 void Detector::ConstructSDandField()
 {
     // Sensitive Detector Name
-    std::string concreteSDname = "phantomSD";
-    std::vector<std::tring> scorer_names;
+    std::string concreteSDname{"phantomSD"};
+    std::vector<std::string> scorer_names;
     scorer_names.push_back(concreteSDname);
 
     //------------------------
@@ -176,10 +178,10 @@ void Detector::ConstructSDandField()
     // declare MFDet as a MultiFunctionalDetector scorer
     G4MultiFunctionalDetector* MFDet = new G4MultiFunctionalDetector(concreteSDname);
 
-    G4VPrimitiveScorer* dosedep = new G4PSDoseDeposit3D("DoseDeposit", _nofv_x, _nofv_y, _nofv_z);
+    G4VPrimitiveScorer* dosedep = new G4PSDoseDeposit3D("DoseDeposit", _phs.nofv_x(), _phs.nofv_y(), _phs.nofv_z());
     MFDet->RegisterPrimitive(dosedep);
 
-    for(auto ite = scorers.begin(); ite != scorers.end(); ++ite)
+    for(auto ite = _scorers.cbegin(); ite != _scorers.cend(); ++ite)
     {
         SetSensitiveDetector(*ite, MFDet);
     }
@@ -194,20 +196,21 @@ void Detector::make_phantom()
     phantom->SetVoxelDimensions( 0.5 * _phs.voxel_x(), 0.5 * _phs.voxel_y(), 0.5 * _phs.voxel_z() );
 
     //----- Set number of voxels
-    param->SetNoVoxel( _phs.nofv_x(), _phs.nofv_y(), _phs.nofv_z() );
+    phantom->SetNoVoxel( _phs.nofv_x(), _phs.nofv_y(), _phs.nofv_z() );
 
     //----- Set list of materials
-    param->SetMaterials( _materials );
+    phantom->SetMaterials( _materials );
 
     //----- Set list of material indices: for each voxel it is a number that
     // correspond to the index of its material in the vector of materials
     // defined above
-    param->SetMaterialIndices( _mat_IDs );
+    phantom->SetMaterialIndices( _mat_IDs );
 
     //----- Define voxel logical volume
-    G4Box* voxel_solid = new G4Box( "Voxel", fVoxelHalfDimX, fVoxelHalfDimY, fVoxelHalfDimZ);
+    G4Box* voxel_solid = new G4Box( "Voxel",
+                                    0.5 * _phs.voxel_x(), 0.5 * _phs.voxel_y(), 0.5 * _phs.voxel_z());
     G4LogicalVolume* voxel_logic =  new G4LogicalVolume(voxel_solid,
-                                                        fMaterials[0],
+                                                        _materials[0],
                                                         "VoxelLogical",
                                                         0,0,0);
     // material is not relevant, it will be changed by the
@@ -216,19 +219,21 @@ void Detector::make_phantom()
     voxel_logic->SetVisAttributes(new G4VisAttributes(G4VisAttributes::Invisible));
 
     //--- Assign the fContainer volume of the parameterisation
-    param->BuildContainerSolid(fContainer_phys);
+    phantom->BuildContainerSolid(_container_phys);
 
     //--- Assure yourself that the voxels are completely filling the
     // fContainer volume
-    param->CheckVoxelsFillContainer( fContainer_solid->GetXHalfLength(),
-                                     fContainer_solid->GetYHalfLength(),
-                                     fContainer_solid->GetZHalfLength() );
+    phantom->CheckVoxelsFillContainer( _container_solid->GetXHalfLength(),
+                                       _container_solid->GetYHalfLength(),
+                                       _container_solid->GetZHalfLength() );
 
 
     //----- The G4PVParameterised object that uses the created parameterisation
     // should be placed in the fContainer logical volume
-    G4PVParameterised * phantom_phys = new G4PVParameterised("phantom", voxel_logic, fContainer_logic,
-                                                              kXAxis, fNVoxelX*fNVoxelY*fNVoxelZ, param);
+    G4PVParameterised * phantom_phys = new G4PVParameterised("phantom", voxel_logic, _container_logic,
+                                                              kXAxis,
+                                                              _phs.nofv_x() * _phs.nofv_y() * _phs.nofv_z(),
+                                                              phantom);
     // if axis is set as kUndefined instead of kXAxis, GEANT4 will
     //  do an smart voxel optimisation
     // (not needed if G4RegularNavigation is used)

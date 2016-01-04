@@ -15,10 +15,10 @@ class RunAction : public G4UserRunAction
 #pragma endregion
 
 #pragma region Data
-    private: Run*                    _run;
+    private: Run*                     _run;
 
-    private: std::vector<std::tring> _SDName; // - vector of MultiFunctionalDetecor names.
-    private: int                     _field_width;
+    private: std::vector<std::string> _SDName; // - vector of MultiFunctionalDetecor names.
+    private: int                      _field_width;
 #pragma endregion
 
 #pragma region Ctor/Dtor/ops

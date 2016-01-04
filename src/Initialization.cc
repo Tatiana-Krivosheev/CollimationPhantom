@@ -15,10 +15,10 @@ Initialization::~Initialization()
 
 void Initialization::BuildForMaster() const
 {
-    SetUserAction(new DicomRunAction);
+    SetUserAction(new RunAction);
 }
 
-void DicomActionInitialization::Build() const
+void Initialization::Build() const
 {
     SetUserAction(new Source);
     SetUserAction(new RunAction);

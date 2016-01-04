@@ -1,3 +1,6 @@
+#include <iostream>
+#include <string>
+
 #include "G4SystemOfUnits.hh"
 
 #ifdef G4MULTITHREADED
@@ -17,15 +20,10 @@
 
 #include "PhantomSetup.hh"
 #include "Detector.hh"
-#include "ActionInitialization.hh"
+#include "Initialization.hh"
 
 int main(int argc, char* argv[])
 {
-    G4UIExecutive* ui = 0;
-    if ( argc == 1 )
-    {
-        ui = new G4UIExecutive(argc, argv);
-    }
 
     // Choose the Random engine
     G4Random::setTheEngine(new CLHEP::RanecuEngine);
@@ -43,16 +41,16 @@ int main(int argc, char* argv[])
 #endif
 
     // Treatment of patient images before creating the G4runManager
-    auto* phs = new PhantomSetup("phantom.hed");
+    PhantomSetup phs{"phantom.hed"};
 
     // Set mandatory initialization classes
 
     // Detector construction
-    auto* geometry = new Detector(phs);
+    auto* geometry = new Detector{phs};
     runManager->SetUserInitialization(geometry);
 
     // Physics list
-    std::vector<string>* phs_vec = new std::vector<string>;
+    auto* phs_vec = new std::vector<G4String>;
     phs_vec->push_back("G4EmStandardPhysics");
     G4VModularPhysicsList* phys = new G4GenericPhysicsList(phs_vec);
     runManager->SetUserInitialization(phys);

@@ -16,11 +16,11 @@ EventAction::~EventAction()
 {
 }
 
-void DicomEventAction::BeginOfEventAction(const G4Event* evt)
+void EventAction::BeginOfEventAction(const G4Event* evt)
 {
     std::cout << "EV: " << evt->GetEventID() << std::endl;
 }
 
-void DicomEventAction::EndOfEventAction(const G4Event*)
+void EventAction::EndOfEventAction(const G4Event*)
 {
 }

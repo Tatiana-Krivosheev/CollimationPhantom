@@ -21,7 +21,7 @@ class Source : public G4VUserPrimaryGeneratorAction
     // source angles, <phi, theta>
     public: using angles  = std::pair<float,float>;
     public: using sincos  = std::pair<float,float>;
-    public: using sncsphi = std::pair<sincos,float>;    
+    public: using sncsphi = std::pair<sincos,float>;
 #pragma endregion
 
 #pragma region Data
@@ -34,16 +34,16 @@ class Source : public G4VUserPrimaryGeneratorAction
     private: int                 _nof_cols;
 
     // isocentre radius
-    private: float               _iso_radius;    
-    
+    private: float               _iso_radius;
+
     // unprocessed data, as read from table,
     // angles are in degrees
     private: std::vector<angles>  _sources;
-    
+
     // processed source info
     private: std::vector<sncsphi> _srcs;
-    
-    private: G4ParticleDefinition* _photon;
+
+    private: G4ParticleDefinition* _gamma;
     private: G4ParticleDefinition* _electron;
     private: G4ParticleDefinition* _positron;
     private: G4ParticleDefinition* _geantino;
@@ -59,17 +59,17 @@ class Source : public G4VUserPrimaryGeneratorAction
     {
         return _nof_rows;
     }
-    
+
     public: int nof_cols() const
     {
         return _nof_cols;
     }
-    
+
     public: float iso_radius() const
     {
         return _iso_radius;
     }
-    
+
     public: std::vector<angles> sources() const
     {
         return _sources;
@@ -79,29 +79,29 @@ class Source : public G4VUserPrimaryGeneratorAction
 #pragma region Mutators
     public: void GeneratePrimaries(G4Event* anEvent);
 
-    public: void set_nof_rows(int nof_rows)
+    public: void set_nof_rows(int nrows)
     {
-        _nof_rows = nof_rows;
+        _nof_rows = nrows;
     }
-    
-    public: void set_nof_cols(int nof_cols)
+
+    public: void set_nof_cols(int ncols)
     {
-        _nof_cols = nof_cols;
+        _nof_cols = ncols;
     }
-    
+
     public: void set_iso_radius(float radius)
     {
         _iso_radius = radius;
     }
-    
-    public: void set_sources(const std::vector<angles>& sources)
+
+    public: void set_sources(const std::vector<angles>& srcs)
     {
         _sources.clear();
-        _sources.reserve(sources.size());
-        _sources = sources;
+        _sources.reserve(srcs.size());
+        _sources = srcs;
         prepare_sources();
     }
-    
+
     public: void prepare_sources();
 #pragma endregion
 };

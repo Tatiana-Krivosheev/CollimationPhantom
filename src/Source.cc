@@ -19,7 +19,7 @@ Source::Source():
     _nof_rows{-1},
     _nof_cols{-1},
     _iso_radius{-1.0f},
-    _photon{nullptr},
+    _gamma{nullptr},
     _electron{nullptr},
     _positron{nullptr},
     _geantino{nullptr}
@@ -75,7 +75,8 @@ static double sample_polar()
     static double polar_start = 0.9994;
     static double polar_end   = 1.0000;
 
-    mu = polar_start + (polar_end - polar_start)*G4UniformRand();
+    double mu = polar_start + (polar_end - polar_start)*G4UniformRand();
+    return mu;
 }
 
 static std::tuple<double,double,double,double,double,double,double,double> generate_particle()
@@ -100,7 +101,7 @@ static std::tuple<double,double,double,double,double,double,double,double> gener
 
 inline double sample_rotangle()
 {
-    return 2.0f * M_PI * G4UniformRand();
+    return 2.0 * M_PI * G4UniformRand();
 }
 
 inline std::tuple<float,float> rotate_2d(double a, double o, double sn, double cs)
@@ -120,14 +121,14 @@ void Source::GeneratePrimaries(G4Event* anEvent)
     // random collimator system rotation
     auto rndphi = sample_rotangle();
 
-    for(int k = 0; k != _srcs.size(); ++k) // running over all source
+    for(decltype(_srcs.size()) k = 0; k != _srcs.size(); ++k) // running over all source
     {
         double xx, yy, zz;
         double wxx, wyy, wzz;
 
         zz = z + _iso_radius; // move point forward
 
-        auto sn = _srcs[k].first.first
+        auto sn = _srcs[k].first.first;
         auto cs = _srcs[k].first.second;
 
         auto phi = _srcs[k].second + rndphi;

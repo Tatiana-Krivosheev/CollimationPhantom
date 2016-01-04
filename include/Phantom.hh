@@ -13,7 +13,7 @@ class G4VisAttributes;
 class Phantom : public G4PhantomParameterisation
 {
 #pragma region Data
-    private: std::map<string, G4VisAttributes*> _colours;
+    private: std::map<std::string, G4VisAttributes*> _colours;
 #pragma endregion
 
 #pragma region Ctor/Dtor/ops
@@ -21,8 +21,11 @@ class Phantom : public G4PhantomParameterisation
     public: ~Phantom();
 #pragma endregion
 
+#pragma region Interfaces
     public:  G4Material* ComputeMaterial(int rep_no, G4VPhysicalVolume* curVol,
                                          const G4VTouchable* parentTouch = nullptr) override;
+#pragma endregion
 
     private: void read_colour_data();
 };
+

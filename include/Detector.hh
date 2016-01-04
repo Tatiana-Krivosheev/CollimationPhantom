@@ -20,24 +20,25 @@ class Detector : public G4VUserDetectorConstruction
     private: G4Material* _Water;
 
     // World
-    private: G4Box*             _world_box;
-    private: G4LogicalVolume*   _world_lv;
-    private: G4VPhysicalVolume* _world_pv;
+    private: G4Box*             _world_solid;
+    private: G4LogicalVolume*   _world_logic;
+    private: G4VPhysicalVolume* _world_phys;
 
     private: G4Box*             _container_solid;
     private: G4LogicalVolume*   _container_logic;
     private: G4VPhysicalVolume* _container_phys;
 
-    private: std::vector<G4Material*> _materials;
     // list of new materials created to distinguish different density
     // voxels that have the same original materials
-    private: uint32_t* _mat_IDs; // index of material of each voxel
+    private: std::vector<G4Material*>   _materials;
+    private: size_t*                    _mat_IDs; // index of material of each voxel
 
     private: PhantomSetup               _phs;
 
     private: std::set<G4LogicalVolume*> _scorers;
 
     private: bool                       _constructed;
+    private: bool                       _checkOverlaps;
 #pragma endregion
 
 #pragma region Ctor/Dtor/ops

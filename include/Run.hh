@@ -20,8 +20,8 @@
 class Run : public G4Run
 {
 #pragma region Data
-    private: std::vector<G4String>             _CollName;
-    private: std::vector<G4int>                _CollID;
+    private: std::vector<std::string>          _CollName;
+    private: std::vector<int>                  _CollID;
     private: std::vector<G4THitsMap<double>*>  _RunMap;
 #pragma endregion
 
@@ -41,13 +41,16 @@ class Run : public G4Run
     //   This is equal to number of collections.
     int GetNumberOfHitsMap() const
     {
-        return fRunMap.size();
+        return _RunMap.size();
     }
 
     // - Get HitsMap of this RUN.
     //   by sequential number, by multifucntional name and collection name,
     //   and by collection name with full path.
-    G4THitsMap<double>* GetHitsMap(int i) const {return fRunMap[i];}
+    G4THitsMap<double>* GetHitsMap(int i) const
+    {
+        return _RunMap[i];
+    }
 
     G4THitsMap<double>* GetHitsMap(const std::string& detName, const std::string& colName) const;
 
