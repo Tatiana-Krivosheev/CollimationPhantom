@@ -51,7 +51,7 @@ void Source::prepare_sources()
 {
     _srcs.clear();
     _srcs.reserve(_sources.size());
-    for(auto k = 0; k != _sources.size(); ++k)
+    for(size_t k = 0; k != _sources.size(); ++k)
     {
         auto theta = _sources[k].first  * M_PI/180.0f;
         auto phi   = _sources[k].second * M_PI/180.0f;
@@ -97,7 +97,6 @@ static std::tuple<double,double,double,double,double,double,double,double> gener
 
     return std::make_tuple(w, e, x, y, z, wx, wy, wz);
 }
-// end-of-source
 
 inline double sample_rotangle()
 {
