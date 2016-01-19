@@ -50,6 +50,9 @@ set(ALL_SCRIPTS
   init_vis.mac
   vis.mac
   startup.mac
+  ColorMap.dat
+  Angles.in
+  phantom.hed
   )
 
 foreach(_script ${ALL_SCRIPTS})
