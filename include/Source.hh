@@ -19,9 +19,9 @@ class Source : public G4VUserPrimaryGeneratorAction
 {
 #pragma region Typedefs
     // source angles, <phi, theta>
-    public: using angles  = std::pair<float,float>;
-    public: using sincos  = std::pair<float,float>;
-    public: using sncsphi = std::pair<sincos,float>;
+    public: using angles  = std::pair<float, float>; // source position as pait of <latitude, longitude>
+    public: using sincos  = std::pair<float, float>; // same sources, but position converted to trigs of angles
+    public: using sncsphi = std::pair<sincos,float>; // all data for fast position description
 #pragma endregion
 
 #pragma region Data
