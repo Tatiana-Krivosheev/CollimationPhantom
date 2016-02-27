@@ -1,5 +1,5 @@
-#include <cmath>
 #include <tuple>
+#include <fstream>
 
 #include "Source.hh"
 
@@ -16,15 +16,16 @@
 Source::Source():
     _particleGun{nullptr},
     _sourceMessenger{nullptr},
-    _nof_rows{-1},
-    _nof_cols{-1},
     _iso_radius{-1.0f},
+    _src_angle{-1.0f},
+    _polar_start{-1.0f},
+    _polar_stop{-1.0f},
     _gamma{nullptr},
     _electron{nullptr},
     _positron{nullptr},
     _geantino{nullptr}
 {
-    _particleGun = new G4ParticleGun( 1 );
+    _particleGun = new G4ParticleGun{ 1 };
 
     auto particleTable = G4ParticleTable::GetParticleTable();
     _gamma    = particleTable->FindParticle("gamma");
@@ -47,14 +48,32 @@ Source::~Source()
     delete _sourceMessenger;
 }
 
-void Source::prepare_sources()
+void Source::set_sources(const std::string& fname)
+{
+    std::ifstream is(fname);
+    if (not is.is_open()) {
+        throw 1;
+    }
+
+    float lat, lon; // source latitude and longitude
+    std::vector<angles> srcs;
+    srcs.reserve(200);
+    while (not is.eof()) {
+        is >> lat >> lon;
+        srcs.emplace_back(angles(lat, lon));
+    }
+
+    this->set_sources(srcs);
+}
+
+void Source::set_sources(const std::vector<angles>& srcs)
 {
     _srcs.clear();
-    _srcs.reserve(_sources.size());
-    for(size_t k = 0; k != _sources.size(); ++k)
+    _srcs.reserve(srcs.size());
+    for(const auto& ss: srcs)
     {
-        auto theta = _sources[k].first  * M_PI/180.0f;
-        auto phi   = _sources[k].second * M_PI/180.0f;
+        auto theta = ss.first  * M_PI/180.0f;
+        auto phi   = ss.second * M_PI/180.0f;
 
         _srcs.emplace_back(sncsphi(sincos(sin(theta), cos(theta)), phi));
     }

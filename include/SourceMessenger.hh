@@ -14,12 +14,13 @@ class G4UIcmdWithADoubleAndUnit;
 class SourceMessenger : public G4UImessenger
 {
 #pragma region Data
-    private: Source* _source;
+    private: Source*                    _source;
 
-    private: G4UIdirectory*           _srcDirectory;
+    private: G4UIdirectory*             _src_directory;
 
-	private: G4UIcmdWithADoubleAndUnit* _radiusCmd;
-	private: G4UIcmdWithADoubleAndUnit* _halfzCmd;
+	private: G4UIcmdWithADoubleAndUnit* _iso_radius_cmd;
+	private: G4UIcmdWithADoubleAndUnit* _src_angle_cmd;
+	private: G4UIcmdWithAString*        _src_fname_cmd;
 #pragma endregion
 
 #pragma region Ctor/Dtor/ops
@@ -28,6 +29,6 @@ class SourceMessenger : public G4UImessenger
 #pragma endregion
 
 #pragma region Interfaces
-	public: virtual void SetNewValue(G4UIcommand* cmd, G4String newValue) override;
+	public: virtual void SetNewValue(G4UIcommand* cmd, G4String value) override;
 #pragma endregion
 };

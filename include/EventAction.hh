@@ -21,7 +21,7 @@ class EventAction : public G4UserEventAction
     public: virtual void EndOfEventAction(const G4Event* anEvent) override;
 #pragma endregion
 
-    public: void SetDrawFlag (std::string val)
+    public: void SetDrawFlag(std::string val)
     {
         _draw_flag = val;
     }

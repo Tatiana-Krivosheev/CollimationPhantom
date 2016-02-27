@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include <fstream>
+#include <cmath>
 #include <utility>
 #include <vector>
 
@@ -28,20 +28,17 @@ class Source : public G4VUserPrimaryGeneratorAction
     private: G4ParticleGun*      _particleGun;
     private: SourceMessenger*    _sourceMessenger;
 
-    // number of collimator rows
-    private: int                 _nof_rows;
-    // number of collimator in a row
-    private: int                 _nof_cols;
-
     // isocentre radius
     private: float               _iso_radius;
+    // source angle
+    private: float               _src_angle;
 
-    // unprocessed data, as read from table,
-    // angles are in degrees
-    private: std::vector<angles>  _sources;
+    // helper sampling data
+    private: float               _polar_start;
+    private: float               _polar_stop;
 
     // processed source info
-    private: std::vector<sncsphi> _srcs;
+    private: std::vector<sncsphi>  _srcs;
 
     private: G4ParticleDefinition* _gamma;
     private: G4ParticleDefinition* _electron;
@@ -51,18 +48,19 @@ class Source : public G4VUserPrimaryGeneratorAction
 
 #pragma region Ctor/Dtor/ops
     public: Source();
+    public: Source(const Source& src) = delete;
+    public: Source(Source&& src)      = default;
+
+    public: Source&  operator=(const Source& src) = delete;
+    public: Source&  operator=(Source&& src)      = default;
+
     public: ~Source();
 #pragma endregion
 
 #pragma region Observers
-    public: int nof_rows() const
+    public: size_t nof_srcs() const
     {
-        return _nof_rows;
-    }
-
-    public: int nof_cols() const
-    {
-        return _nof_cols;
+        return _srcs.size();
     }
 
     public: float iso_radius() const
@@ -70,39 +68,45 @@ class Source : public G4VUserPrimaryGeneratorAction
         return _iso_radius;
     }
 
-    public: std::vector<angles> sources() const
+    public: float src_angle() const
     {
-        return _sources;
+        return _iso_radius;
+    }
+
+    public: float polar_start() const
+    {
+        return _polar_start;
+    }
+
+    public: float polar_stop() const
+    {
+        return _polar_stop;
+    }
+
+    public: std::vector<sncsphi> sources() const
+    {
+        return _srcs;
     }
 #pragma endregion
 
 #pragma region Mutators
     public: void GeneratePrimaries(G4Event* anEvent);
 
-    public: void set_nof_rows(int nrows)
-    {
-        _nof_rows = nrows;
-    }
-
-    public: void set_nof_cols(int ncols)
-    {
-        _nof_cols = ncols;
-    }
-
     public: void set_iso_radius(float radius)
     {
         _iso_radius = radius;
     }
 
-    public: void set_sources(const std::vector<angles>& srcs)
+    public: void set_src_angle(float angle)
     {
-        _sources.clear();
-        _sources.reserve(srcs.size());
-        _sources = srcs;
-        prepare_sources();
+        _src_angle = angle;
+
+        _polar_start = cos(angle);
+        _polar_stop  = cos(0.0);
     }
 
-    public: void prepare_sources();
+    public:  void set_sources(const std::string& fname);
+
+    private: void set_sources(const std::vector<angles>& srcs);
 #pragma endregion
 };
-
