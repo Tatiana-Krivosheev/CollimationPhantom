@@ -1,22 +1,29 @@
 #include <iostream>
 #include <string>
 
-#include "G4SystemOfUnits.hh"
-
 #ifdef G4MULTITHREADED
 #include "G4MTRunManager.hh"
 #else
 #include "G4RunManager.hh"
 #endif
 
-#include "G4UImanager.hh"
+#include "G4SystemOfUnits.hh"
 
+#include "globals.hh"
+#include "G4UImanager.hh"
+#include "Randomize.hh"
+
+#ifdef G4VIS_USE
 #include "G4VisExecutive.hh"
+#endif
+
+#ifdef G4UI_USE
 #include "G4UIExecutive.hh"
+#endif
 
 #include "G4GenericPhysicsList.hh"
-
-#include "Randomize.hh"
+#include "QGSP_BIC.hh"
+#include "G4tgrMessenger.hh"
 
 #include "PhantomSetup.hh"
 #include "Detector.hh"
@@ -24,26 +31,26 @@
 
 int main(int argc, char* argv[])
 {
+    new G4tgrMessenger; // ?
 
     // Choose the Random engine
     G4Random::setTheEngine(new CLHEP::RanecuEngine);
-
-    // long long seeds[2];
-    // seeds[0] = 534524575674523LL;
-    // seeds[1] = 526345623452457LL;
-    // CLHEP::HepRandom::setTheSeeds(seeds);
+    CLHEP::HepRandom::setTheSeed(24534575684783);
+    long seeds[2];
+    seeds[0] = 534524575674523;
+    seeds[1] = 526345623452457;
+    CLHEP::HepRandom::setTheSeeds(seeds);
 
     // Construct the default run manager
-#ifdef G4MULTITHREADED
+    int nthreads = 4;
     G4MTRunManager* runManager = new G4MTRunManager;
-#else
-    G4RunManager* runManager = new G4RunManager;
-#endif
+    runManager->SetNumberOfThreads(nthreads);
+
+    std::cout << "\n\n\tPHANTOM running in multithreaded mode with " << nthreads
+              << " threads\n\n" << std::endl;
 
     // Treatment of patient images before creating the G4runManager
     PhantomSetup phs{"phantom.hed"};
-
-    // Set mandatory initialization classes
 
     // Detector construction
     auto* geometry = new Detector{phs};
@@ -59,6 +66,8 @@ int main(int argc, char* argv[])
     runManager->SetUserInitialization(new Initialization());
 
     runManager->Initialize();
+
+    std::cout << "QQQ\n";
 
 #ifdef G4VIS_USE
     // visualisation manager
@@ -82,9 +91,9 @@ int main(int argc, char* argv[])
     }
     else
     {
-        std::string command = "/control/execute ";
-        std::string fileName = argv[1];
-        UImanager->ApplyCommand(command+fileName);
+        std::string command   = "/control/execute ";
+        std::string file_name = argv[1];
+        UImanager->ApplyCommand(command + file_name);
     }
 
     delete runManager;

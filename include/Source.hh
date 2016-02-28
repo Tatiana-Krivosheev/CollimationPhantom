@@ -94,16 +94,11 @@ class Source : public G4VUserPrimaryGeneratorAction
 
     public: void set_iso_radius(float radius)
     {
+        std::cout << "Source::set_iso_radius\n";
         _iso_radius = radius;
     }
 
-    public: void set_src_angle(float angle)
-    {
-        _src_angle = angle;
-
-        _polar_start = cos(angle);
-        _polar_stop  = cos(0.0);
-    }
+    public:  void set_src_angle(float angle);
 
     public:  void set_sources(const std::string& fname);
 

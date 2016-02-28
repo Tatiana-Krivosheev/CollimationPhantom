@@ -3,6 +3,7 @@
 
 #include "G4UIcmdWithAString.hh"
 #include "G4UIcmdWithAnInteger.hh"
+#include "G4UIcmdWithADouble.hh"
 #include "G4UIcmdWithADoubleAndUnit.hh"
 
 SourceMessenger::SourceMessenger(Source* source):
@@ -16,7 +17,7 @@ SourceMessenger::SourceMessenger(Source* source):
     _src_directory->SetGuidance("Source construction control");
 
     _iso_radius_cmd = new G4UIcmdWithADoubleAndUnit("/GP/source/iso_radius", this);
-    _iso_radius_cmd->SetGuidance("Set ISO source radius");
+    _iso_radius_cmd->SetGuidance("Set ISOsource radius");
     _iso_radius_cmd->SetParameterName("iso_radius", false);
     _iso_radius_cmd->SetUnitCategory("Length");
     _iso_radius_cmd->SetRange("iso_radius>0.0");
@@ -25,8 +26,11 @@ SourceMessenger::SourceMessenger(Source* source):
     _src_angle_cmd = new G4UIcmdWithADoubleAndUnit("/GP/source/src_angle", this);
     _src_angle_cmd->SetGuidance("Set source angle");
     _src_angle_cmd->SetParameterName("src_angle", false);
+    _src_angle_cmd->SetUnitCategory("Length");
     _src_angle_cmd->SetRange("src_angle>0.0");
     _src_angle_cmd->AvailableForStates(G4State_PreInit, G4State_Idle);
+
+    // _src_angle_cmd->SetDefaultUnit("degree");
 
     _src_fname_cmd = new G4UIcmdWithAString("/GP/source/src_fname", this);
     _src_fname_cmd->SetGuidance("Set file name");

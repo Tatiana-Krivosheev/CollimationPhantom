@@ -48,8 +48,19 @@ Source::~Source()
     delete _sourceMessenger;
 }
 
+void Source::set_src_angle(float angle)
+{
+    std::cout << "Source::set_src_angle\n";
+    _src_angle = angle;
+
+    _polar_start = cos(angle*M_PI/180.0);
+    _polar_stop  = cos(0.0);
+}
+
 void Source::set_sources(const std::string& fname)
 {
+    std::cout << "Source::set_sources " << fname << std::endl;
+
     std::ifstream is(fname);
     if (not is.is_open()) {
         throw 1;
@@ -138,8 +149,6 @@ static inline std::tuple<double, double> rotate_2d(double a, double o, double sn
 {
     return std::make_tuple(cs*a - sn*o, sn*a + cs*o);
 }
-
-
 
 // source particle parameters, called per each source event
 void Source::GeneratePrimaries(G4Event* anEvent)
