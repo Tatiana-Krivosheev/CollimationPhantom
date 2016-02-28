@@ -66,21 +66,33 @@ void Source::set_sources(const std::string& fname)
     this->set_sources(srcs);
 }
 
+static inline float degree_to_radian(float adegree)
+{
+    return adegree * float(M_PI) / 180.0f;
+}
+
 void Source::set_sources(const std::vector<angles>& srcs)
 {
     _srcs.clear();
     _srcs.reserve(srcs.size());
     for(const auto& ss: srcs)
     {
-        auto theta = ss.first  * M_PI/180.0f;
-        auto phi   = ss.second * M_PI/180.0f;
+        auto theta = degree_to_radian( ss.first );
+        auto phi   = degree_to_radian( ss.second );
 
         _srcs.emplace_back(sncsphi(sincos(sin(theta), cos(theta)), phi));
     }
 }
 
+// Geometry of the system is such, that
+// Z axis is going down,
+// Y is going horizontally from left to right and
+// X is whatever it is
+
 // this code is to simulate conical source,
 // to be removed and replaced by phase space file
+
+// energy sampling, two monolines from Co60
 static double sample_energy()
 {
     if (G4UniformRand() < 0.5)
@@ -89,28 +101,27 @@ static double sample_energy()
     return 1.17*MeV;
 }
 
-static double sample_polar()
+// sample source polar angle uniformly in the range
+static double sample_polar(float polar_start, float polar_stop)
 {
-    static double polar_start = 0.9994;
-    static double polar_end   = 1.0000;
-
-    double mu = polar_start + (polar_end - polar_start)*G4UniformRand();
+    double mu = polar_start + (polar_stop - polar_start)*G4UniformRand();
     return mu;
 }
 
-static std::tuple<double,double,double,double,double,double,double,double> generate_particle()
+// generate particle at (0,0,0)
+static std::tuple<double,double,double,double,double,double,double,double> generate_particle(double polar_start, double polar_stop)
 {
     double x = 0.0;
     double y = 0.0;
     double z = 0.0;
 
-    auto cos_theta = sample_polar();
+    auto cos_theta = sample_polar(polar_start, polar_stop);
     auto sin_theta = sqrt((1.0 - cos_theta)*(1.0 + cos_theta));
     auto phi       = 2.0 * M_PI * G4UniformRand();
 
-    auto wx = sin_theta*cos(phi);
+    auto wx = cos_theta;
     auto wy = sin_theta*sin(phi);
-    auto wz = cos_theta;
+    auto wz = sin_theta*cos(phi);
 
     auto e = sample_energy();
     auto w = 1.0;
@@ -118,15 +129,17 @@ static std::tuple<double,double,double,double,double,double,double,double> gener
     return std::make_tuple(w, e, x, y, z, wx, wy, wz);
 }
 
-inline double sample_rotangle()
+static inline double sample_rotangle()
 {
-    return 2.0 * M_PI * G4UniformRand();
+    return 0.0; // 2.0 * M_PI * G4UniformRand();
 }
 
-inline std::tuple<float,float> rotate_2d(double a, double o, double sn, double cs)
+static inline std::tuple<double, double> rotate_2d(double a, double o, double sn, double cs)
 {
     return std::make_tuple(cs*a - sn*o, sn*a + cs*o);
 }
+
+
 
 // source particle parameters, called per each source event
 void Source::GeneratePrimaries(G4Event* anEvent)
@@ -135,37 +148,55 @@ void Source::GeneratePrimaries(G4Event* anEvent)
     double wx, wy, wz;
     double w, e;
 
-    std::tie(w, e, x, y, z, wx, wy, wz) = generate_particle();
+    // get generated at center but with proper direction
+    std::tie(w, e, x, y, z, wx, wy, wz) = generate_particle(this->_polar_start, this->_polar_stop);
+
+    // move source back in X, so it is proper
+    // position
+    x -= this->_iso_radius;
 
     // random collimator system rotation
     auto rndphi = sample_rotangle();
 
+    // now making it all together for all sources in the system
     for(decltype(_srcs.size()) k = 0; k != _srcs.size(); ++k) // running over all source
     {
         double xx, yy, zz;
         double wxx, wyy, wzz;
 
-        zz = z + _iso_radius; // move point forward
+        xx = x;
+        yy = y;
+        zz = z;
 
+        wxx = wx;
+        wyy = wy;
+        wzz = wz;
+
+        // polar rotation, getting matrix
         auto sn = _srcs[k].first.first;
         auto cs = _srcs[k].first.second;
 
-        auto phi = _srcs[k].second + rndphi;
+        // polar rotation, around Y axis, mixing X & Z and making proper latitude
+        std::tie( zz, xx)  = rotate_2d( zz,  xx, sn, cs);
+        std::tie(wzz, wxx) = rotate_2d(wzz, wxx, sn, cs);
 
-        // polar rotation, around X axis
-        std::tie( zz, yy)  = rotate_2d( z,  y, sn, cs);
-        std::tie(wzz, wyy) = rotate_2d(wz, wy, sn, cs);
+        // aziumth rotation, around Z axis, making proper longitude
 
-        // aziumth rotation, around Z axis
+        // here is random position of the particular source
+        auto phi = _srcs[k].second + rndphi; // source longitude plus rotation angle
+
+        // compute rot.matrix
         sn = sin(phi);
         cs = cos(phi);
-        std::tie(xx, yy) = rotate_2d( x, yy, sn, cs);
-        std::tie(wxx, wyy) = rotate_2d(wx, wyy, sn, cs);
+
+        // and rotate around Z, mixing X & Y
+        std::tie(xx, yy)   = rotate_2d( xx,  yy, sn, cs);
+        std::tie(wxx, wyy) = rotate_2d(wxx, wyy, sn, cs);
 
         _particleGun->SetParticlePosition(G4ThreeVector(xx, yy, zz));
 
         // reflect direction
-        _particleGun->SetParticleMomentumDirection(G4ThreeVector(-wxx, -wyy, -wzz));
+        _particleGun->SetParticleMomentumDirection(G4ThreeVector(wxx, wyy, wzz));
 
         _particleGun->SetParticleEnergy(e);
 

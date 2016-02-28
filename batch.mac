@@ -3,15 +3,15 @@
 /run/verbose 0
 /event/verbose 0
 
-/control/execute C25.in
-
 /run/numberOfThreads 1
 
 /run/initialize
 
-/control/execute source.in
+/GP/source/iso_radius 380.0
+/GP/source/src_angle  0.034643
+/GP/source/src_fname  Angles.in
 
-#/random/setSeeds 111 65535
+/random/setSeeds 111 65535
 
-# NB: number of events! Each event generate 10 photons
-/run/beamOn 100
+# NB: number of events! Each event generate 36 photons, one per source
+/run/beamOn 10
