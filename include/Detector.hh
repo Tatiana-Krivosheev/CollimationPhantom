@@ -114,5 +114,4 @@ class Detector : public G4VUserDetectorConstruction
     protected: void make_phantom();
 
     public: void set_scorer(G4LogicalVolume* voxel_logic);
-
 };

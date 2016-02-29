@@ -20,11 +20,11 @@ RunAction* RunAction::Instance()
 }
 
 RunAction::RunAction():
-    G4UserRunAction(),
+    G4UserRunAction{},
     _run{nullptr},
     _field_width{14}
 {
-    _SDName.push_back(std::string("phantomSD"));
+    _SDName.push_back(std::string{"phantomSD"});
     _instance = this;
 }
 
@@ -40,11 +40,7 @@ G4Run* RunAction::GenerateRun()
     // dedicated for MultiFunctionalDetector scheme.
     // Detail description can be found in the Run.hh/cc.
     // return new Run(_SDName);
-    if (_run)
-        delete _run;
-
-    _run = new Run{_SDName};
-    return _run;
+    return _run = new Run{_SDName};
 }
 
 void RunAction::BeginOfRunAction(const G4Run* aRun)
@@ -111,7 +107,7 @@ void RunAction::EndOfRunAction(const G4Run* aRun)
         std::cout << " ###### EndOfRunAction ###### " << std::endl;
 
         const Run* re02Run = static_cast<const Run*>(aRun);
-        //--- Dump all scored quantities involved in DicomRun.
+        //--- Dump all scored quantities involved in the Run.
 
         for ( size_t i = 0; i != _SDName.size(); ++i )
         {
@@ -127,7 +123,7 @@ void RunAction::EndOfRunAction(const G4Run* aRun)
             std::cout << "=============================================================" << std::endl;
 
             std::ofstream fileout;
-            std::string fname = "zzz.out";
+            std::string fname = "dose.out";
             fileout.open(fname);
 
             std::cout << " opened file " << fname << " for dose output" << std::endl;
@@ -152,7 +148,7 @@ void RunAction::EndOfRunAction(const G4Run* aRun)
             }
             else
             {
-                G4Exception("DicomRunAction", "000", JustWarning,
+                G4Exception("RunAction", "000", JustWarning,
                             "DoseDeposit HitsMap is either a null pointer of the HitsMap was empty");
             }
 

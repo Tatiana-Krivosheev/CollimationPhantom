@@ -86,7 +86,7 @@ void Run::ConstructMFD(const std::vector<std::string>& mfdName)
                 // where type of HitsCollection is G4THitsMap in case of a primitive scorer.
                 // The collection name is given by <MFD name>/<Primitive Scorer name>.
                 std::string collectionName = scorer->GetName();
-                std::string fullCollectionName = detName+"/"+collectionName;
+                std::string fullCollectionName = detName + "/" + collectionName;
                 int collectionID = SDman->GetCollectionID(fullCollectionName);
 
                 if ( collectionID >= 0 )
@@ -97,7 +97,7 @@ void Run::ConstructMFD(const std::vector<std::string>& mfdName)
                     // And, creates new G4THitsMap for accumulating quantities during RUN.
                     _CollName.push_back(fullCollectionName);
                     _CollID.push_back(collectionID);
-                    _RunMap.push_back(new G4THitsMap<double>(detName,collectionName));
+                    _RunMap.push_back(new G4THitsMap<double>(detName, collectionName));
                 }
                 else
                 {
@@ -113,7 +113,7 @@ void Run::ConstructMFD(const std::vector<std::string>& mfdName)
 //  is accumulated during a Run.
 void Run::RecordEvent(const G4Event* aEvent)
 {
-    numberOfEvent++;  // This is an original line.
+    ++numberOfEvent;  // This is an original line.
 
     //=============================
     // HitsCollection of This Event
@@ -158,11 +158,18 @@ void Run::Merge(const G4Run* aRun)
 
     // copy function returns the fRunMap size if all data is copied
     // so this loop isn't executed the first time around
-    // std::cout << "Run :: Num copies = " << ncopies << std::endl;
 
-    for(size_t i = ncopies; i != _RunMap.size(); ++i)
+    //std::cout << "Run :: Num copies = " << ncopies << std::endl;
+    //std::cout << "Run :: Siz copies = " << _RunMap.size() << std::endl;
+
+    for(unsigned i = ncopies; i != _RunMap.size(); ++i)
     {
-        *_RunMap[i] += *(localRun->_RunMap[i]);
+        auto prm = _RunMap[i];
+        if (prm) {
+            auto lrm = localRun->_RunMap[i];
+            if (lrm)
+                *prm += *lrm;
+        }
     }
     Run::Merge(aRun);
 }
@@ -175,7 +182,7 @@ void Run::Merge(const G4Run* aRun)
 G4THitsMap<double>* Run::GetHitsMap(const std::string& detName,
                                     const std::string& colName) const
 {
-    std::string fullName = detName+"/"+colName;
+    std::string fullName = detName + "/" + colName;
     return GetHitsMap(fullName);
 }
 

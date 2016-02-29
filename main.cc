@@ -42,7 +42,7 @@ int main(int argc, char* argv[])
     CLHEP::HepRandom::setTheSeeds(seeds);
 
     // Construct the default run manager
-    int nthreads = 1;
+    int nthreads = 4;
     G4MTRunManager* runManager = new G4MTRunManager;
     runManager->SetNumberOfThreads(nthreads);
 

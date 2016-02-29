@@ -58,7 +58,7 @@ class Run : public G4Run
 
     void ConstructMFD(const std::vector<std::string>&);
 
-    virtual void Merge(const G4Run*);
+    virtual void Merge(const G4Run*) override;
 #pragma endregion
 };
 
@@ -76,7 +76,7 @@ template <typename T> inline void copy(std::vector<T>& main, const std::vector<T
 template <typename T> inline unsigned copy(std::vector<T*>& main, const std::vector<T*>& data)
 {
     auto size_diff = data.size() - main.size();
-    for(auto i = main.size(); i < data.size(); ++i)
+    for(auto i = main.size(); i != data.size(); ++i)
     {
         main.push_back(new T(*data.at(i)));
     }
@@ -92,4 +92,9 @@ template <typename T> inline std::ostream& print(const std::vector<T>& data, std
     }
     os << std::endl;
     return os;
+}
+
+template <typename T> inline std::ostream& print(const std::vector<T>& data)
+{
+    return print(data, std::cout);
 }

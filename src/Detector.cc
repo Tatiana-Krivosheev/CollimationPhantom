@@ -181,7 +181,7 @@ void Detector::ConstructSDandField()
     G4VPrimitiveScorer* dosedep = new G4PSDoseDeposit3D("DoseDeposit", _phs.nofv_x(), _phs.nofv_y(), _phs.nofv_z());
     MFDet->RegisterPrimitive(dosedep);
 
-    for(auto ite = _scorers.cbegin(); ite != _scorers.cend(); ++ite)
+    for(auto ite = _scorers.begin(); ite != _scorers.end(); ++ite)
     {
         SetSensitiveDetector(*ite, MFDet);
     }

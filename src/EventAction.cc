@@ -18,7 +18,7 @@ EventAction::~EventAction()
 
 void EventAction::BeginOfEventAction(const G4Event* evt)
 {
-    std::cout << "EV: " << evt->GetEventID() << std::endl;
+    G4cout << "EV: " << evt->GetEventID() << G4endl;
 }
 
 void EventAction::EndOfEventAction(const G4Event*)

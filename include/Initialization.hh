@@ -5,7 +5,7 @@
 class Initialization : public G4VUserActionInitialization
 {
 #pragma region Ctor/Dtor/ops
-    public: Initialization();
+    public:          Initialization();
     public: virtual ~Initialization();
 #pragma endregion
 
