@@ -158,11 +158,11 @@ void Run::Merge(const G4Run* aRun)
 
     // copy function returns the fRunMap size if all data is copied
     // so this loop isn't executed the first time around
-    std::cout << "Run :: Num copies = " << ncopies << std::endl;
+    // std::cout << "Run :: Num copies = " << ncopies << std::endl;
 
-    for(unsigned i = ncopies; i != _RunMap.size(); ++i)
+    for(size_t i = ncopies; i != _RunMap.size(); ++i)
     {
-        *_RunMap[i] += *localRun->_RunMap[i];
+        *_RunMap[i] += *(localRun->_RunMap[i]);
     }
     Run::Merge(aRun);
 }

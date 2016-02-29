@@ -18,23 +18,22 @@ SourceMessenger::SourceMessenger(Source* source):
 
     _iso_radius_cmd = new G4UIcmdWithADoubleAndUnit("/GP/source/iso_radius", this);
     _iso_radius_cmd->SetGuidance("Set ISOsource radius");
-    _iso_radius_cmd->SetParameterName("iso_radius", false);
-    _iso_radius_cmd->SetUnitCategory("Length");
-    _iso_radius_cmd->SetRange("iso_radius>0.0");
+    _iso_radius_cmd->SetParameterName("isoRadius", false);
+    //_iso_radius_cmd->SetUnitCategory("Length");
+    _iso_radius_cmd->SetDefaultUnit("mm");
+    _iso_radius_cmd->SetUnitCandidates("mm cm m");
+    _iso_radius_cmd->SetRange("isoRadius>0.0");
     _iso_radius_cmd->AvailableForStates(G4State_PreInit, G4State_Idle);
 
     _src_angle_cmd = new G4UIcmdWithADoubleAndUnit("/GP/source/src_angle", this);
     _src_angle_cmd->SetGuidance("Set source angle");
-    _src_angle_cmd->SetParameterName("src_angle", false);
-    _src_angle_cmd->SetUnitCategory("Length");
-    _src_angle_cmd->SetRange("src_angle>0.0");
+    _src_angle_cmd->SetParameterName("src_angle", true);
+    _src_angle_cmd->SetDefaultUnit("degree");
     _src_angle_cmd->AvailableForStates(G4State_PreInit, G4State_Idle);
-
-    // _src_angle_cmd->SetDefaultUnit("degree");
 
     _src_fname_cmd = new G4UIcmdWithAString("/GP/source/src_fname", this);
     _src_fname_cmd->SetGuidance("Set file name");
-    _src_angle_cmd->SetParameterName("src_fname", false);
+    _src_angle_cmd->SetParameterName("srcFname", false);
     _src_angle_cmd->AvailableForStates(G4State_PreInit, G4State_Idle);
 }
 

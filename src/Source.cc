@@ -12,6 +12,11 @@
 
 #include "Randomize.hh"
 
+static inline float degree_to_radian(float adegree)
+{
+    return adegree * float(M_PI) / 180.0f;
+}
+
 // here you set global source parameters, called once per run
 Source::Source():
     _particleGun{nullptr},
@@ -50,10 +55,10 @@ Source::~Source()
 
 void Source::set_src_angle(float angle)
 {
-    std::cout << "Source::set_src_angle\n";
+    std::cout << "Source::set_src_angle: " << angle << "\n";
     _src_angle = angle;
 
-    _polar_start = cos(angle*M_PI/180.0);
+    _polar_start = cos(angle);
     _polar_stop  = cos(0.0);
 }
 
@@ -75,11 +80,6 @@ void Source::set_sources(const std::string& fname)
     }
 
     this->set_sources(srcs);
-}
-
-static inline float degree_to_radian(float adegree)
-{
-    return adegree * float(M_PI) / 180.0f;
 }
 
 void Source::set_sources(const std::vector<angles>& srcs)
