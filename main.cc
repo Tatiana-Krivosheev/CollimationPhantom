@@ -67,8 +67,6 @@ int main(int argc, char* argv[])
 
     runManager->Initialize();
 
-    std::cout << "QQQ\n";
-
 #ifdef G4VIS_USE
     // visualisation manager
     G4VisManager* visManager = new G4VisExecutive;
