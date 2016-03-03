@@ -20,6 +20,8 @@ class SourceMessenger : public G4UImessenger
 
 	private: G4UIcmdWithADoubleAndUnit* _iso_radius_cmd;
 	private: G4UIcmdWithADoubleAndUnit* _src_angle_cmd;
+	private: G4UIcmdWithADoubleAndUnit* _rot_start_cmd;
+	private: G4UIcmdWithADoubleAndUnit* _rot_stop_cmd;
 	private: G4UIcmdWithAString*        _src_fname_cmd;
 #pragma endregion
 

@@ -33,9 +33,13 @@ class Source : public G4VUserPrimaryGeneratorAction
     // source angle
     private: float               _src_angle;
 
-    // helper sampling data
+    // collimator sampling data
     private: float               _polar_start;
     private: float               _polar_stop;
+
+    // collimator sampling data
+    private: float               _rot_start;
+    private: float               _rot_stop;
 
     // processed source info
     private: std::vector<sncsphi>  _srcs;
@@ -83,6 +87,16 @@ class Source : public G4VUserPrimaryGeneratorAction
         return _polar_stop;
     }
 
+    public: float rot_start() const
+    {
+        return _rot_start;
+    }
+
+    public: float rot_stop() const
+    {
+        return _rot_stop;
+    }
+
     public: std::vector<sncsphi> sources() const
     {
         return _srcs;
@@ -94,11 +108,20 @@ class Source : public G4VUserPrimaryGeneratorAction
 
     public: void set_iso_radius(float radius)
     {
-        std::cout << "Source::set_iso_radius\n";
         _iso_radius = radius;
     }
 
     public:  void set_src_angle(float angle);
+
+    public:  void set_rot_start(float angle)
+    {
+        _rot_start = angle;
+    }
+
+    public:  void set_rot_stop(float angle)
+    {
+        _rot_stop = angle;
+    }
 
     public:  void set_sources(const std::string& fname);
 

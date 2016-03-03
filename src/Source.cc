@@ -140,9 +140,9 @@ static std::tuple<double,double,double,double,double,double,double,double> gener
     return std::make_tuple(w, e, x, y, z, wx, wy, wz);
 }
 
-static inline double sample_rotangle()
+static inline double sample_rotangle(double rstart, double rstop)
 {
-    return 0.0; // 2.0 * M_PI * G4UniformRand();
+    return rstart + (rstop - rstart) * G4UniformRand();
 }
 
 static inline std::tuple<double, double> rotate_2d(double a, double o, double sn, double cs)
@@ -165,7 +165,7 @@ void Source::GeneratePrimaries(G4Event* anEvent)
     x -= this->_iso_radius;
 
     // random collimator system rotation
-    auto rndphi = sample_rotangle();
+    auto rndphi = sample_rotangle(_rot_start, _rot_stop);
 
     // now making it all together for all sources in the system
     for(decltype(_srcs.size()) k = 0; k != _srcs.size(); ++k) // running over all source

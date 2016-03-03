@@ -52,6 +52,7 @@ set(ALL_SCRIPTS
   startup.mac
   ColorMap.dat
   Angles.in
+  Source.in
   phantom.hed
   )
 

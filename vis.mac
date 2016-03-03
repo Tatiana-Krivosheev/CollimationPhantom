@@ -69,8 +69,6 @@
 #
 /run/initialize
 
-/GP/source/iso_radius 380.0 mm
-/GP/source/src_angle 2.0 degree
-/GP/source/src_fname Angles.in
+/control/execute Source.in
 
 /tracking/verbose 1

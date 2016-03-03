@@ -11,6 +11,8 @@ SourceMessenger::SourceMessenger(Source* source):
     _src_directory{nullptr},
     _iso_radius_cmd{nullptr},
     _src_angle_cmd{nullptr},
+	_rot_start_cmd{nullptr},
+	_rot_stop_cmd{nullptr},
     _src_fname_cmd{nullptr}
 {
     _src_directory = new G4UIdirectory("/GP/source/");
@@ -31,6 +33,18 @@ SourceMessenger::SourceMessenger(Source* source):
     _src_angle_cmd->SetDefaultUnit("degree");
     _src_angle_cmd->AvailableForStates(G4State_PreInit, G4State_Idle);
 
+    _rot_start_cmd = new G4UIcmdWithADoubleAndUnit("/GP/source/rot_start", this);
+    _rot_start_cmd->SetGuidance("Set rotation start angle");
+    _rot_start_cmd->SetParameterName("rot_start", true);
+    _rot_start_cmd->SetDefaultUnit("degree");
+    _rot_start_cmd->AvailableForStates(G4State_PreInit, G4State_Idle);
+
+    _rot_stop_cmd = new G4UIcmdWithADoubleAndUnit("/GP/source/rot_stop", this);
+    _rot_stop_cmd->SetGuidance("Set rotation stop angle");
+    _rot_stop_cmd->SetParameterName("rot_stop", true);
+    _rot_stop_cmd->SetDefaultUnit("degree");
+    _rot_stop_cmd->AvailableForStates(G4State_PreInit, G4State_Idle);
+
     _src_fname_cmd = new G4UIcmdWithAString("/GP/source/src_fname", this);
     _src_fname_cmd->SetGuidance("Set file name");
     _src_angle_cmd->SetParameterName("srcFname", false);
@@ -41,6 +55,10 @@ SourceMessenger::~SourceMessenger()
 {
 	delete _iso_radius_cmd;
 	delete _src_angle_cmd;
+
+    delete _rot_start_cmd;
+    delete _rot_stop_cmd;
+
 	delete _src_fname_cmd;
 
 	delete _src_directory;
@@ -57,6 +75,18 @@ void SourceMessenger::SetNewValue(G4UIcommand* cmd, G4String value)
 	if (cmd == _src_angle_cmd)
 	{
 	    _source->set_src_angle(_src_angle_cmd->GetNewDoubleValue(value));
+		return;
+	}
+
+	if (cmd == _rot_start_cmd)
+	{
+	    _source->set_rot_start(_rot_start_cmd->GetNewDoubleValue(value));
+		return;
+	}
+
+	if (cmd == _rot_stop_cmd)
+	{
+	    _source->set_rot_stop(_rot_stop_cmd->GetNewDoubleValue(value));
 		return;
 	}
 
