@@ -55,7 +55,7 @@ Source::~Source()
 
 void Source::set_src_angle(float angle)
 {
-    std::cout << "Source::set_src_angle: " << angle << "\n";
+    G4cout << "Source::set_src_angle: " << angle << G4endl;
     _src_angle = angle;
 
     _polar_start = cos(angle);
@@ -64,7 +64,7 @@ void Source::set_src_angle(float angle)
 
 void Source::set_sources(const std::string& fname)
 {
-    std::cout << "Source::set_sources " << fname << std::endl;
+    G4cout << "Source::set_sources " << fname << G4endl;
 
     std::ifstream is(fname);
     if (not is.is_open()) {

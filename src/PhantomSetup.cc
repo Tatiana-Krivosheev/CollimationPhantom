@@ -21,7 +21,7 @@ PhantomSetup::PhantomSetup(const char* hed_name):
     _cube_y(-1.0f),
     _cube_z(-1.0f)
 {
-    std::cout << "Reading file:" << hed_name << std::endl;
+    G4cout << "Reading file:" << hed_name << G4endl;
     std::ifstream hed_file(hed_name, std::ios::in);
     if (!hed_file)
     {

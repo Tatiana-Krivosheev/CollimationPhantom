@@ -45,7 +45,7 @@ G4Run* RunAction::GenerateRun()
 
 void RunAction::BeginOfRunAction(const G4Run* aRun)
 {
-    std::cout << "### Run " << aRun->GetRunID() << " start." << std::endl;
+    G4cout << "### Run " << aRun->GetRunID() << " start." << G4endl;
 
     //inform the runManager to save random number seed
     G4RunManager::GetRunManager()->SetRandomNumberStore(false);
@@ -89,22 +89,22 @@ void RunAction::EndOfRunAction(const G4Run* aRun)
 
     if (IsMaster())
     {
-        std::cout << "\n--------------------End of Global Run-----------------------"
-                  << " \n The run was " << nofEvents << " events " << std::endl;
-        std::cout << "LOCAL TOTAL DOSE : \t" << local_total_dose/gray << " Gy" << std::endl;
-        std::cout << "      TOTAL DOSE : \t" << total_dose/gray << " Gy" << std::endl;
+        G4cout << "\n--------------------End of Global Run-----------------------"
+               << " \n The run was " << nofEvents << " events " << G4endl;
+        G4cout << "LOCAL TOTAL DOSE : \t" << local_total_dose/gray << " Gy" << G4endl;
+        G4cout << "      TOTAL DOSE : \t" << total_dose/gray << " Gy" << G4endl;
     }
     else
     {
-        std::cout << "\n--------------------End of Local Run------------------------"
-                  << " \n The run was " << nofEvents << std::endl;
-        std::cout << "LOCAL TOTAL DOSE : \t" << local_total_dose/gray << " Gy" << std::endl;
-        std::cout << "      TOTAL DOSE : \t" << total_dose/gray << " Gy" << std::endl;
+        G4cout << "\n--------------------End of Local Run------------------------"
+               << " \n The run was " << nofEvents << G4endl;
+        G4cout << "LOCAL TOTAL DOSE : \t" << local_total_dose/gray << " Gy" << G4endl;
+        G4cout << "      TOTAL DOSE : \t" << total_dose/gray << " Gy" << G4endl;
     }
 
     if(IsMaster())
     {
-        std::cout << " ###### EndOfRunAction ###### " << std::endl;
+        G4cout << " ###### EndOfRunAction ###### " << G4endl;
 
         const Run* re02Run = static_cast<const Run*>(aRun);
         //--- Dump all scored quantities involved in the Run.
@@ -118,19 +118,19 @@ void RunAction::EndOfRunAction(const G4Run* aRun)
         //---------------------------------------------
             G4THitsMap<G4double>* DoseDeposit = re02Run->GetHitsMap(_SDName[i]+"/DoseDeposit");
 
-            std::cout << "=============================================================" << std::endl;
-            std::cout << " Number of event processed : " << aRun->GetNumberOfEvent() << std::endl;
-            std::cout << "=============================================================" << std::endl;
+            G4cout << "=============================================================" << G4endl;
+            G4cout << " Number of event processed : " << aRun->GetNumberOfEvent() << G4endl;
+            G4cout << "=============================================================" << G4endl;
 
             std::ofstream fileout;
             std::string fname = "dose.out";
             fileout.open(fname);
 
-            std::cout << " opened file " << fname << " for dose output" << std::endl;
+            G4cout << " opened file " << fname << " for dose output" << G4endl;
 
             if( DoseDeposit && DoseDeposit->GetMap()->size() != 0 )
             {
-                std::ostream *myout = &std::cout;
+                std::ostream *myout = &G4cout;
                 print_header(myout);
 
                 auto itr = DoseDeposit->GetMap()->cbegin();
@@ -138,13 +138,13 @@ void RunAction::EndOfRunAction(const G4Run* aRun)
                 {
                     fileout <<  itr->first
                             << "     "  << *(itr->second)/CLHEP::gray
-                            << std::endl;
-                    std::cout << "    " << itr->first
+                            << G4endl;
+                    G4cout << "    " << itr->first
                               << "     " << std::setprecision(6)
                               << *(itr->second)/CLHEP::gray << " Gy"
-                              << std::endl;
+                              << G4endl;
                 }
-                std::cout << "=============================================" << std::endl;
+                G4cout << "=============================================" << G4endl;
             }
             else
             {
@@ -153,11 +153,11 @@ void RunAction::EndOfRunAction(const G4Run* aRun)
             }
 
             fileout.close();
-            std::cout << " closed file " << fname << " for dose output" << std::endl;
+            G4cout << " closed file " << fname << " for dose output" << G4endl;
         }
     }
 
-    std::cout << "Finished : End of Run Action " << aRun->GetRunID() << std::endl;
+    G4cout << "Finished : End of Run Action " << aRun->GetRunID() << G4endl;
 }
 
 void RunAction::print_header(std::ostream *out)
@@ -178,7 +178,7 @@ void RunAction::print_header(std::ostream *out)
         //    *out << vname << '|';
         *out << std::setw(_field_width) << (*it) << "  |";
     }
-    *out << std::endl;
+    *out << G4endl;
 }
 
 std::string RunAction::fill_string(const std::string &name,

@@ -91,7 +91,7 @@ void Run::ConstructMFD(const std::vector<std::string>& mfdName)
 
                 if ( collectionID >= 0 )
                 {
-                    std::cout << "++ "<<fullCollectionName<< " id " << collectionID << std::endl;
+                    G4cout << "++ "<<fullCollectionName<< " id " << collectionID << G4endl;
 
                     // Store obtained HitsCollection information into data members.
                     // And, creates new G4THitsMap for accumulating quantities during RUN.
@@ -101,7 +101,7 @@ void Run::ConstructMFD(const std::vector<std::string>& mfdName)
                 }
                 else
                 {
-                    std::cout << "** collection " << fullCollectionName << " not found. " << std::endl;
+                    G4cout << "** collection " << fullCollectionName << " not found. " << G4endl;
                 }
             }
         }
@@ -128,14 +128,14 @@ void Run::RecordEvent(const G4Event* aEvent)
     auto Ncol = _CollID.size();
     for ( decltype(Ncol) i = 0; i != Ncol ; ++i )  // Loop over HitsCollection
     {
-        G4THitsMap<double>* EvtMap = 0;
+        G4THitsMap<double>* EvtMap = nullptr;
         if ( _CollID[i] >= 0 )           // Collection is attached to HCE
         {
             EvtMap = static_cast<G4THitsMap<double>*>(HCE->GetHC(_CollID[i]));
         }
         else
         {
-            std::cout <<" Error EvtMap Not Found "<< i << std::endl;
+            G4cout <<" Error EvtMap Not Found "<< i << G4endl;
         }
         if ( EvtMap )
         {
@@ -159,8 +159,7 @@ void Run::Merge(const G4Run* aRun)
     // copy function returns the fRunMap size if all data is copied
     // so this loop isn't executed the first time around
 
-    //std::cout << "Run :: Num copies = " << ncopies << std::endl;
-    //std::cout << "Run :: Siz copies = " << _RunMap.size() << std::endl;
+    G4cout << "Run :: Num copies = " << ncopies << G4endl;
 
     for(unsigned i = ncopies; i != _RunMap.size(); ++i)
     {
@@ -171,14 +170,14 @@ void Run::Merge(const G4Run* aRun)
                 *prm += *lrm;
         }
     }
-    Run::Merge(aRun);
+    G4Run::Merge(aRun);
 }
 
 
 //  Access method for HitsMap of the RUN
 //-----
-// Access HitsMap.
-//  By  MultiFunctionalDetector name and Collection Name.
+// Access HitsMap by  MultiFunctionalDetector name
+// and Collection Name.
 G4THitsMap<double>* Run::GetHitsMap(const std::string& detName,
                                     const std::string& colName) const
 {
