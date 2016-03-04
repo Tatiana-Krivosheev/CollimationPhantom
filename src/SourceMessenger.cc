@@ -45,6 +45,22 @@ SourceMessenger::SourceMessenger(Source* source):
     _rot_stop_cmd->SetDefaultUnit("degree");
     _rot_stop_cmd->AvailableForStates(G4State_PreInit, G4State_Idle);
 
+    _shift_y_cmd = new G4UIcmdWithADoubleAndUnit("/GP/source/shift_y", this);
+    _shift_y_cmd->SetGuidance("Set Source2Phantom Y shift");
+    _shift_y_cmd->SetParameterName("shift_y", false);
+    _shift_y_cmd->SetDefaultUnit("mm");
+    _shift_y_cmd->SetUnitCandidates("mm cm m");
+    _shift_y_cmd->SetRange("shift_y>0.0");
+    _shift_y_cmd->AvailableForStates(G4State_PreInit, G4State_Idle);
+
+    _shift_z_cmd = new G4UIcmdWithADoubleAndUnit("/GP/source/shift_z", this);
+    _shift_z_cmd->SetGuidance("Set Source2Phantom Z shift");
+    _shift_z_cmd->SetParameterName("shift_z", false);
+    _shift_z_cmd->SetDefaultUnit("mm");
+    _shift_z_cmd->SetUnitCandidates("mm cm m");
+    _shift_z_cmd->SetRange("shift_z>0.0");
+    _shift_z_cmd->AvailableForStates(G4State_PreInit, G4State_Idle);
+
     _src_fname_cmd = new G4UIcmdWithAString("/GP/source/src_fname", this);
     _src_fname_cmd->SetGuidance("Set file name");
     _src_angle_cmd->SetParameterName("srcFname", false);
@@ -58,6 +74,9 @@ SourceMessenger::~SourceMessenger()
 
     delete _rot_start_cmd;
     delete _rot_stop_cmd;
+
+    delete _shift_y_cmd;
+    delete _shift_z_cmd;
 
 	delete _src_fname_cmd;
 
@@ -87,6 +106,18 @@ void SourceMessenger::SetNewValue(G4UIcommand* cmd, G4String value)
 	if (cmd == _rot_stop_cmd)
 	{
 	    _source->set_rot_stop(_rot_stop_cmd->GetNewDoubleValue(value));
+		return;
+	}
+
+	if (cmd == _shift_y_cmd)
+	{
+		_source->set_shift_y(_shift_y_cmd->GetNewDoubleValue(value));
+		return;
+	}
+
+	if (cmd == _shift_z_cmd)
+	{
+		_source->set_shift_z(_shift_z_cmd->GetNewDoubleValue(value));
 		return;
 	}
 

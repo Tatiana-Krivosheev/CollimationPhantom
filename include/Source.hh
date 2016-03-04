@@ -28,18 +28,23 @@ class Source : public G4VUserPrimaryGeneratorAction
     private: G4ParticleGun*      _particleGun;
     private: SourceMessenger*    _sourceMessenger;
 
-    // isocentre radius
+    // isocentre radius, mm
     private: float               _iso_radius;
-    // source angle
+
+    // source collimator angle, radian
     private: float               _src_angle;
 
-    // collimator sampling data
+    // collimator sampling angles cosines
     private: float               _polar_start;
     private: float               _polar_stop;
 
-    // collimator sampling data
+    // assembly rotation range, radians
     private: float               _rot_start;
     private: float               _rot_stop;
+
+    // phantom-source shift, mm
+    private: float               _shift_y;
+    private: float               _shift_z;
 
     // processed source info
     private: std::vector<sncsphi>  _srcs;
@@ -97,6 +102,16 @@ class Source : public G4VUserPrimaryGeneratorAction
         return _rot_stop;
     }
 
+    public: float shift_y() const
+    {
+        return _shift_y;
+    }
+
+    public: float shift_z() const
+    {
+        return _shift_z;
+    }
+
     public: std::vector<sncsphi> sources() const
     {
         return _srcs;
@@ -111,19 +126,29 @@ class Source : public G4VUserPrimaryGeneratorAction
         _iso_radius = radius;
     }
 
-    public:  void set_src_angle(float angle);
+    public: void set_src_angle(float angle);
 
-    public:  void set_rot_start(float angle)
+    public: void set_rot_start(float angle)
     {
         _rot_start = angle;
     }
 
-    public:  void set_rot_stop(float angle)
+    public: void set_rot_stop(float angle)
     {
         _rot_stop = angle;
     }
 
-    public:  void set_sources(const std::string& fname);
+    public: void set_shift_y(float shift)
+    {
+        _shift_y = shift;
+    }
+
+    public: void set_shift_z(float shift)
+    {
+        _shift_z = shift;
+    }
+
+    public: void set_sources(const std::string& fname);
 
     private: void set_sources(const std::vector<angles>& srcs);
 #pragma endregion

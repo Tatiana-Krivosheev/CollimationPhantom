@@ -25,6 +25,8 @@ Source::Source():
     _src_angle{-1.0f},
     _polar_start{-1.0f},
     _polar_stop{-1.0f},
+    _shift_y{-1.0f},
+    _shift_z{-1.0f},
     _gamma{nullptr},
     _electron{nullptr},
     _positron{nullptr},
