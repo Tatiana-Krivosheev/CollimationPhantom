@@ -2,4 +2,6 @@
 /GP/source/src_angle 2.0 degree
 /GP/source/rot_start 0.0 degree
 /GP/source/rot_stop 360.0 degree
+/GP/source/shift_y 0.0 mm
+/GP/source/shift_z 0.0 mm
 /GP/source/src_fname Angles.in

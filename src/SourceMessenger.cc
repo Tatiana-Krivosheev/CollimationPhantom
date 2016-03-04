@@ -50,7 +50,7 @@ SourceMessenger::SourceMessenger(Source* source):
     _shift_y_cmd->SetParameterName("shift_y", false);
     _shift_y_cmd->SetDefaultUnit("mm");
     _shift_y_cmd->SetUnitCandidates("mm cm m");
-    _shift_y_cmd->SetRange("shift_y>0.0");
+    _shift_y_cmd->SetRange("shift_y>=0.0");
     _shift_y_cmd->AvailableForStates(G4State_PreInit, G4State_Idle);
 
     _shift_z_cmd = new G4UIcmdWithADoubleAndUnit("/GP/source/shift_z", this);
@@ -58,7 +58,7 @@ SourceMessenger::SourceMessenger(Source* source):
     _shift_z_cmd->SetParameterName("shift_z", false);
     _shift_z_cmd->SetDefaultUnit("mm");
     _shift_z_cmd->SetUnitCandidates("mm cm m");
-    _shift_z_cmd->SetRange("shift_z>0.0");
+    _shift_z_cmd->SetRange("shift_z>=0.0");
     _shift_z_cmd->AvailableForStates(G4State_PreInit, G4State_Idle);
 
     _src_fname_cmd = new G4UIcmdWithAString("/GP/source/src_fname", this);
