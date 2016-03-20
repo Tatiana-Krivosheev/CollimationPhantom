@@ -42,7 +42,8 @@ class Source : public G4VUserPrimaryGeneratorAction
     private: float               _rot_start;
     private: float               _rot_stop;
 
-    // phantom-source shift, mm
+    // phantom-to-source shift, mm, default values set to 0
+    private: float               _shift_x;
     private: float               _shift_y;
     private: float               _shift_z;
 
@@ -136,6 +137,11 @@ class Source : public G4VUserPrimaryGeneratorAction
     public: void set_rot_stop(float angle)
     {
         _rot_stop = angle;
+    }
+
+    public: void set_shift_x(float shift)
+    {
+        _shift_x = shift;
     }
 
     public: void set_shift_y(float shift)

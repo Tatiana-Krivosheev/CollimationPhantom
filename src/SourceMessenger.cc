@@ -13,6 +13,9 @@ SourceMessenger::SourceMessenger(Source* source):
     _src_angle_cmd{nullptr},
 	_rot_start_cmd{nullptr},
 	_rot_stop_cmd{nullptr},
+    _shift_x_cmd{nullptr},
+    _shift_y_cmd{nullptr},
+    _shift_z_cmd{nullptr},
     _src_fname_cmd{nullptr}
 {
     _src_directory = new G4UIdirectory("/GP/source/");
@@ -45,12 +48,18 @@ SourceMessenger::SourceMessenger(Source* source):
     _rot_stop_cmd->SetDefaultUnit("degree");
     _rot_stop_cmd->AvailableForStates(G4State_PreInit, G4State_Idle);
 
+    _shift_x_cmd = new G4UIcmdWithADoubleAndUnit("/GP/source/shift_x", this);
+    _shift_x_cmd->SetGuidance("Set Source2Phantom X shift");
+    _shift_x_cmd->SetParameterName("shift_x", false);
+    _shift_x_cmd->SetDefaultUnit("mm");
+    _shift_x_cmd->SetUnitCandidates("mm cm m");
+    _shift_x_cmd->AvailableForStates(G4State_PreInit, G4State_Idle);
+
     _shift_y_cmd = new G4UIcmdWithADoubleAndUnit("/GP/source/shift_y", this);
     _shift_y_cmd->SetGuidance("Set Source2Phantom Y shift");
     _shift_y_cmd->SetParameterName("shift_y", false);
     _shift_y_cmd->SetDefaultUnit("mm");
     _shift_y_cmd->SetUnitCandidates("mm cm m");
-    _shift_y_cmd->SetRange("shift_y>=0.0");
     _shift_y_cmd->AvailableForStates(G4State_PreInit, G4State_Idle);
 
     _shift_z_cmd = new G4UIcmdWithADoubleAndUnit("/GP/source/shift_z", this);
@@ -58,7 +67,6 @@ SourceMessenger::SourceMessenger(Source* source):
     _shift_z_cmd->SetParameterName("shift_z", false);
     _shift_z_cmd->SetDefaultUnit("mm");
     _shift_z_cmd->SetUnitCandidates("mm cm m");
-    _shift_z_cmd->SetRange("shift_z>=0.0");
     _shift_z_cmd->AvailableForStates(G4State_PreInit, G4State_Idle);
 
     _src_fname_cmd = new G4UIcmdWithAString("/GP/source/src_fname", this);
@@ -106,6 +114,12 @@ void SourceMessenger::SetNewValue(G4UIcommand* cmd, G4String value)
 	if (cmd == _rot_stop_cmd)
 	{
 	    _source->set_rot_stop(_rot_stop_cmd->GetNewDoubleValue(value));
+		return;
+	}
+
+	if (cmd == _shift_x_cmd)
+	{
+		_source->set_shift_x(_shift_x_cmd->GetNewDoubleValue(value));
 		return;
 	}
 

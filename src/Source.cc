@@ -25,8 +25,9 @@ Source::Source():
     _src_angle{-1.0f},
     _polar_start{-1.0f},
     _polar_stop{-1.0f},
-    _shift_y{-1.0f},
-    _shift_z{-1.0f},
+    _shift_x{0.0f},
+    _shift_y{0.0f},
+    _shift_z{0.0f},
     _gamma{nullptr},
     _electron{nullptr},
     _positron{nullptr},
@@ -129,7 +130,7 @@ static std::tuple<double,double,double,double,double,double,double,double> gener
     double z = 0.0;
 
     auto cos_theta = sample_polar(polar_start, polar_stop);
-    auto sin_theta = sqrt((1.0 - cos_theta)*(1.0 + cos_theta));
+    auto sin_theta = sqrt((1.0 - cos_theta) * (1.0 + cos_theta));
     auto phi       = 2.0 * M_PI * G4UniformRand();
 
     auto wx = cos_theta;
@@ -166,12 +167,13 @@ void Source::GeneratePrimaries(G4Event* anEvent)
     // position
     x -= this->_iso_radius;
 
-    // random collimator system rotation
+    // random collimator assembly rotation angle
     auto rndphi = sample_rotangle(_rot_start, _rot_stop);
 
     // now making it all together for all sources in the system
     for(decltype(_srcs.size()) k = 0; k != _srcs.size(); ++k) // running over all source
     {
+        // per single collimator photon phs coordinates
         double xx, yy, zz;
         double wxx, wyy, wzz;
 
@@ -196,7 +198,7 @@ void Source::GeneratePrimaries(G4Event* anEvent)
         // here is random position of the particular source
         auto phi = _srcs[k].second + rndphi; // source longitude plus rotation angle
 
-        // compute rot.matrix
+        // compute aziumth rot.matrix
         sn = sin(phi);
         cs = cos(phi);
 
@@ -204,7 +206,8 @@ void Source::GeneratePrimaries(G4Event* anEvent)
         std::tie(xx, yy)   = rotate_2d( xx,  yy, sn, cs);
         std::tie(wxx, wyy) = rotate_2d(wxx, wyy, sn, cs);
 
-        _particleGun->SetParticlePosition(G4ThreeVector(xx, yy, zz));
+        // now add shift between phantom and source isocentre
+        _particleGun->SetParticlePosition(G4ThreeVector(xx - this->_shift_x, yy - this->_shift_y, zz - this->_shift_y));
 
         // reflect direction
         _particleGun->SetParticleMomentumDirection(G4ThreeVector(wxx, wyy, wzz));
