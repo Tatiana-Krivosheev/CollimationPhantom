@@ -29,3 +29,6 @@
 
 # CLion
 .idea/
+
+# VS Code
+.browse.VC.*
