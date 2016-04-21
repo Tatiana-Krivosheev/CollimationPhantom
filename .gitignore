@@ -29,6 +29,7 @@
 
 # CLion
 .idea/
+run/
 
 # VS Code
 .browse.VC.*
