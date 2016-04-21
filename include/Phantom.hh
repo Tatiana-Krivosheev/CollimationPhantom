@@ -18,14 +18,13 @@ class Phantom : public G4PhantomParameterisation
 
 #pragma region Ctor/Dtor/ops
     public: Phantom();
-    public: ~Phantom();
+    public: virtual ~Phantom() override;
 #pragma endregion
 
 #pragma region Interfaces
-    public:  G4Material* ComputeMaterial(int rep_no, G4VPhysicalVolume* curVol,
-                                         const G4VTouchable* parentTouch = nullptr) override;
+    public: virtual G4Material* ComputeMaterial(int rep_no, G4VPhysicalVolume* curVol,
+                                                const G4VTouchable* parentTouch = nullptr) override;
 #pragma endregion
 
     private: void read_colour_data();
 };
-

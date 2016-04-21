@@ -105,7 +105,7 @@ class Detector : public G4VUserDetectorConstruction
 
     public: virtual G4VPhysicalVolume* Construct() override;
 
-    virtual void ConstructSDandField() override;
+    public: virtual void ConstructSDandField() override;
 
     protected: void init_materials();
 

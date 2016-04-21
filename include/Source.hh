@@ -120,7 +120,7 @@ class Source : public G4VUserPrimaryGeneratorAction
 #pragma endregion
 
 #pragma region Mutators
-    public: void GeneratePrimaries(G4Event* anEvent);
+    public: void GeneratePrimaries(G4Event* anEvent) override;
 
     public: void set_iso_radius(float radius)
     {
