@@ -146,12 +146,12 @@ if __name__ == "__main__":
 
     ax = fig.add_subplot(111)
     fig.subplots_adjust(top=0.85)
-    ax.set_title('X profile')
+    ax.set_title('Z profile')
 
     ax.set_xlabel('Distance, mm')
     ax.set_ylabel('Dose, a.u.')
 
-    ax.plot(y, dy, '*')
+    ax.plot(z, dz, '*')
     #ax.axis([0, 10, 0, 10])
     #plt.scatter(y, dy, alpha=0.1)
 
