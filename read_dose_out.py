@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 import numpy as np
+from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 
 def read_phantom_head(fname):
@@ -115,6 +116,26 @@ def make_xy_axis(n, v):
 
     return xy
 
+def plot2d(x, dx, y, dy, z, dz):
+    """
+    """
+
+    # plt.scatter(z, dz, alpha=0.1)
+    fig = plt.figure()
+    fig.suptitle('Dose distribution', fontsize=14, fontweight='bold')
+
+    ax = fig.add_subplot(111)
+    fig.subplots_adjust(top=0.85)
+    ax.set_title('Z profile')
+
+    ax.set_xlabel('Distance, mm')
+    ax.set_ylabel('Dose, a.u.')
+
+    ax.plot(z, dz, '*')
+    #ax.axis([0, 10, 0, 10])
+    #plt.scatter(y, dy, alpha=0.1)
+    plt.show()
+
 if __name__ == "__main__":
 
     vx, vy, vz, nx, ny, nz = read_phantom_head("phantom.hed")
@@ -140,19 +161,29 @@ if __name__ == "__main__":
     dy = 1.0e+7*(dose[ix, :, iz] + dose[ix, :, iz+1] + dose[ix+1, :, iz] + dose[ix+1, :, iz+1])/4.0
     y = make_xy_axis(ny, vy)
 
-    #plt.scatter(z, dz, alpha=0.1)
+    xx = np.empty( nx*ny, dtype=np.float32)
+    yy = np.empty( nx*ny, dtype=np.float32)
+    zz = np.empty( nx*ny, dtype=np.float32)
+
+    dxy = 1.0e+7*(dose[:, :, iz] + dose[:, :, iz+1])/2.0
+
+    k = 0
+    for iy in range(0, ny):
+        for ix in range(0, nx):
+            yy[k] = y[iy]
+            xx[k] = x[ix]
+            zz[k] = dxy[ix, iy]
+
+            k += 1
+
+
     fig = plt.figure()
-    fig.suptitle('Dose distribution', fontsize=14, fontweight='bold')
+    ax  = fig.add_subplot(111, projection='3d')
 
-    ax = fig.add_subplot(111)
-    fig.subplots_adjust(top=0.85)
-    ax.set_title('Z profile')
+    ax.scatter(xx, yy, zz, alpha=0.1)
 
-    ax.set_xlabel('Distance, mm')
-    ax.set_ylabel('Dose, a.u.')
-
-    ax.plot(z, dz, '*')
-    #ax.axis([0, 10, 0, 10])
-    #plt.scatter(y, dy, alpha=0.1)
+    ax.set_xlabel('X, mm')
+    ax.set_ylabel('Y, mm')
+    ax.set_zlabel('Dose, a.u.')
 
     plt.show()
