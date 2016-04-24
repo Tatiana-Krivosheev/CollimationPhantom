@@ -4,6 +4,10 @@ import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 
+X = 0
+Y = 1
+Z = 2
+
 def read_phantom_head(fname):
     """
     Given filename, read and parse phantom header file
@@ -116,7 +120,7 @@ def make_xy_axis(n, v):
 
     return xy
 
-def plot2d(x, dx, y, dy, z, dz):
+def plot2d_X(x, dx, y, dy, z, dz):
     """
     """
 
@@ -134,7 +138,92 @@ def plot2d(x, dx, y, dy, z, dz):
     ax.plot(z, dz, '*')
     #ax.axis([0, 10, 0, 10])
     #plt.scatter(y, dy, alpha=0.1)
-    plt.show()
+
+def plot2d_X(x, dx, y, dy, z, dz):
+    """
+    """
+
+    # plt.scatter(z, dz, alpha=0.1)
+    fig = plt.figure()
+    fig.suptitle('Dose distribution', fontsize=14, fontweight='bold')
+
+    ax = fig.add_subplot(111)
+    fig.subplots_adjust(top=0.85)
+    ax.set_title('Z profile')
+
+    ax.set_xlabel('Distance, mm')
+    ax.set_ylabel('Dose, a.u.')
+
+    ax.plot(z, dz, '*')
+    #ax.axis([0, 10, 0, 10])
+    #plt.scatter(y, dy, alpha=0.1)
+
+def plot2d_X(x, dx):
+    """
+    Plot x profile
+    """
+
+    fig = plt.figure()
+    fig.suptitle('Dose distribution', fontsize=14, fontweight='bold')
+
+    ax = fig.add_subplot(111)
+    fig.subplots_adjust(top=0.85)
+    ax.set_title('X profile')
+
+    ax.set_xlabel('Distance, mm')
+    ax.set_ylabel('Dose, a.u.')
+
+    #ax.axis([0, 10, 0, 10])
+    ax.plot(x, dx, '*')
+
+def plot2d_Y(y, dy):
+    """
+    Plot Y profile
+    """
+
+    fig = plt.figure()
+    fig.suptitle('Dose distribution', fontsize=14, fontweight='bold')
+
+    ax = fig.add_subplot(111)
+    fig.subplots_adjust(top=0.85)
+    ax.set_title('Y profile')
+
+    ax.set_xlabel('Distance, mm')
+    ax.set_ylabel('Dose, a.u.')
+
+    #ax.axis([0, 10, 0, 10])
+    ax.plot(y, dy, '*')
+
+def plot2d_Z(z, dz):
+    """
+    Plot Z profile
+    """
+
+    fig = plt.figure()
+    fig.suptitle('Dose distribution', fontsize=14, fontweight='bold')
+
+    ax = fig.add_subplot(111)
+    fig.subplots_adjust(top=0.85)
+    ax.set_title('Z profile')
+
+    ax.set_xlabel('Distance, mm')
+    ax.set_ylabel('Dose, a.u.')
+
+    #ax.axis([0, 10, 0, 10])
+    ax.plot(z, dz, '*')
+
+def plot3d_XY(xx, yy, zz):
+    """
+    """
+
+    fig = plt.figure()
+    ax  = fig.add_subplot(111, projection='3d')
+
+    ax.set_xlabel('X, mm')
+    ax.set_ylabel('Y, mm')
+    ax.set_zlabel('Dose, a.u.')
+
+    ax.scatter(xx, yy, zz, alpha=0.1)
 
 if __name__ == "__main__":
 
@@ -152,21 +241,33 @@ if __name__ == "__main__":
     iy = ny//2 - 1 # we start with 0 for Y
     iz = nz//2 - 1 # we start with 0 for Z
 
-    dz = 1.0e+7*(dose[ix, iy, :] + dose[ix+1, iy, :] + dose[ix, iy+1, :] + dose[ix+1, iy+1, :])/4.0
+    C = 1.0e+7
+
+    # Z dose profile
+    dz = C*(dose[ix, iy, :] + dose[ix+1, iy, :] + dose[ix, iy+1, :] + dose[ix+1, iy+1, :])/4.0
     z  = make_z_axis(nz, vz)
 
-    dx = 1.0e+7*(dose[:, iy, iz] + dose[:, iy, iz+1] + dose[:, iy+1, iz] + dose[:, iy+1, iz+1])/4.0
+    # X dose profile
+    dx = C*(dose[:, iy, iz] + dose[:, iy, iz+1] + dose[:, iy+1, iz] + dose[:, iy+1, iz+1])/4.0
     x = make_xy_axis(nx, vx)
 
-    dy = 1.0e+7*(dose[ix, :, iz] + dose[ix, :, iz+1] + dose[ix+1, :, iz] + dose[ix+1, :, iz+1])/4.0
+    # Y dose profile
+    dy = C*(dose[ix, :, iz] + dose[ix, :, iz+1] + dose[ix+1, :, iz] + dose[ix+1, :, iz+1])/4.0
     y = make_xy_axis(ny, vy)
 
+    #plot2d_X(x, dx)
+    #plot2d_Y(y, dy)
+    #plot2d_Z(z, dz)
+
+    # XY plane data as three 1D linear arrays
     xx = np.empty( nx*ny, dtype=np.float32)
     yy = np.empty( nx*ny, dtype=np.float32)
     zz = np.empty( nx*ny, dtype=np.float32)
 
-    dxy = 1.0e+7*(dose[:, :, iz] + dose[:, :, iz+1])/2.0
+    # dose in the X&Y plane
+    dxy = C*(dose[:, :, iz] + dose[:, :, iz+1])/2.0
 
+    # from plane and X&Y coord arrays fill 1D linear arrays
     k = 0
     for iy in range(0, ny):
         for ix in range(0, nx):
@@ -176,14 +277,6 @@ if __name__ == "__main__":
 
             k += 1
 
-
-    fig = plt.figure()
-    ax  = fig.add_subplot(111, projection='3d')
-
-    ax.scatter(xx, yy, zz, alpha=0.1)
-
-    ax.set_xlabel('X, mm')
-    ax.set_ylabel('Y, mm')
-    ax.set_zlabel('Dose, a.u.')
+    plot3d_XY(xx, yy, zz)
 
     plt.show()
