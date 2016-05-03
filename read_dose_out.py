@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
 import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
