@@ -227,19 +227,23 @@ def plot3d_XY(xx, yy, zz):
 
 if __name__ == "__main__":
 
-    vx, vy, vz, nx, ny, nz = read_phantom_head("phantom.hed")
+    vx, vy, vz, nx, ny, nz = read_phantom_head("run/phantom.hed")
     print(vx, vy, vz, nx, ny, nz)
 
-    dout = read_dose_out("dose.out")
+    dout = read_dose_out("run/dose.out")
     print(len(dout))
 
     dose = make_dose_array(nx, ny, nz, dout)
     print(dose.shape)
     #print(dose)
 
-    ix = nx//2 - 1 # we start with 0 for X
-    iy = ny//2 - 1 # we start with 0 for Y
-    iz = nz//2 - 1 # we start with 0 for Z
+    shift_x = -8.0
+    shift_y =  8.0
+    shift_z = -12.0
+
+    ix = nx//2 - 1 + int(round(shift_x / vx)) # we start with 0 for X
+    iy = ny//2 - 1 + int(round(shift_y / vy)) # we start with 0 for Y
+    iz = nz//2 - 1 + int(round(shift_z / vz)) # we start with 0 for Z
 
     C = 1.0e+7
 
@@ -255,9 +259,9 @@ if __name__ == "__main__":
     dy = C*(dose[ix, :, iz] + dose[ix, :, iz+1] + dose[ix+1, :, iz] + dose[ix+1, :, iz+1])/4.0
     y = make_xy_axis(ny, vy)
 
-    #plot2d_X(x, dx)
-    #plot2d_Y(y, dy)
-    #plot2d_Z(z, dz)
+    plot2d_X(x, dx)
+    plot2d_Y(y, dy)
+    plot2d_Z(z, dz)
 
     # XY plane data as three 1D linear arrays
     xx = np.empty( nx*ny, dtype=np.float32)
