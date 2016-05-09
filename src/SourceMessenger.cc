@@ -83,6 +83,7 @@ SourceMessenger::~SourceMessenger()
     delete _rot_start_cmd;
     delete _rot_stop_cmd;
 
+    delete _shift_x_cmd;
     delete _shift_y_cmd;
     delete _shift_z_cmd;
 

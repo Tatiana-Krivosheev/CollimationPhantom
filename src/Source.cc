@@ -1,4 +1,5 @@
 #include <tuple>
+#include <limits>
 #include <fstream>
 
 #include "Source.hh"
@@ -12,6 +13,8 @@
 
 #include "Randomize.hh"
 
+using nl = std::numeric_limits<float>;
+
 static inline float degree_to_radian(float adegree)
 {
     return adegree * float(M_PI) / 180.0f;
@@ -21,13 +24,15 @@ static inline float degree_to_radian(float adegree)
 Source::Source():
     _particleGun{nullptr},
     _sourceMessenger{nullptr},
-    _iso_radius{-1.0f},
-    _src_angle{-1.0f},
-    _polar_start{-1.0f},
-    _polar_stop{-1.0f},
-    _shift_x{0.0f},
-    _shift_y{0.0f},
-    _shift_z{0.0f},
+
+    _iso_radius{nl::quiet_NaN()},
+    _src_angle{nl::quiet_NaN()},
+    _polar_start{nl::quiet_NaN()},
+    _polar_stop{nl::quiet_NaN()},
+    _shift_x{nl::quiet_NaN()},
+    _shift_y{nl::quiet_NaN()},
+    _shift_z{nl::quiet_NaN()},
+
     _gamma{nullptr},
     _electron{nullptr},
     _positron{nullptr},
@@ -35,7 +40,7 @@ Source::Source():
 {
     _particleGun = new G4ParticleGun{ 1 };
 
-    auto particleTable = G4ParticleTable::GetParticleTable();
+    auto* particleTable = G4ParticleTable::GetParticleTable();
     _gamma    = particleTable->FindParticle("gamma");
     _electron = particleTable->FindParticle("e-");
     _positron = particleTable->FindParticle("e+");
@@ -206,12 +211,15 @@ void Source::GeneratePrimaries(G4Event* anEvent)
         std::tie(xx, yy)   = rotate_2d( xx,  yy, sn, cs);
         std::tie(wxx, wyy) = rotate_2d(wxx, wyy, sn, cs);
 
-        // now add shift between phantom and source isocentre
-        _particleGun->SetParticlePosition(G4ThreeVector(xx - this->_shift_x, yy - this->_shift_y, zz - this->_shift_y));
+        // now add shift between phantom center and source isocenter
+        _particleGun->SetParticlePosition(G4ThreeVector(xx + this->_shift_x,
+                                                        yy + this->_shift_y,
+                                                        zz + this->_shift_z));
 
-        // reflect direction
+        // set particle direction
         _particleGun->SetParticleMomentumDirection(G4ThreeVector(wxx, wyy, wzz));
 
+        // and energy
         _particleGun->SetParticleEnergy(e);
 
         _particleGun->GeneratePrimaryVertex(anEvent);

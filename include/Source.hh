@@ -42,7 +42,7 @@ class Source : public G4VUserPrimaryGeneratorAction
     private: float               _rot_start;
     private: float               _rot_stop;
 
-    // phantom-to-source shift, mm, default values set to 0
+    // phantom-to-source shift, mm, default values are NOT set
     private: float               _shift_x;
     private: float               _shift_y;
     private: float               _shift_z;
@@ -64,7 +64,7 @@ class Source : public G4VUserPrimaryGeneratorAction
     public: Source&  operator=(const Source& src) = delete;
     public: Source&  operator=(Source&& src)      = default;
 
-    public: ~Source();
+    public: virtual ~Source();
 #pragma endregion
 
 #pragma region Observers
@@ -101,6 +101,11 @@ class Source : public G4VUserPrimaryGeneratorAction
     public: float rot_stop() const
     {
         return _rot_stop;
+    }
+
+    public: float shift_x() const
+    {
+        return _shift_x;
     }
 
     public: float shift_y() const
