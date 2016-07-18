@@ -86,7 +86,13 @@ def make_dose_array(nx, ny, nz, dout):
                 idx  = ix + iy*nx + iz*nx*ny
                 idx += nz
 
-                dose[ix, iy, iz] = dout[idx]
+                d = np.float32(0.0)
+                try:
+                    d = dout[idx]
+                except KeyError:
+                    pass
+
+                dose[ix, iy, iz] = d
 
     return dose
 
@@ -227,19 +233,22 @@ def plot3d_XY(xx, yy, zz):
 
 if __name__ == "__main__":
 
-    vx, vy, vz, nx, ny, nz = read_phantom_head("run/phantom.hed")
-    print(vx, vy, vz, nx, ny, nz)
+    vx, vy, vz, nx, ny, nz = read_phantom_head("./phantom.hed")
+    print("==== PHANTOM ====")
+    print(vx, vy, vz)
+    print(nx, ny, nz)
+    print("")
 
-    dout = read_dose_out("run/dose.out")
+    dout = read_dose_out("./dose_z_6mm.out")
     print(len(dout))
 
     dose = make_dose_array(nx, ny, nz, dout)
     print(dose.shape)
     #print(dose)
 
-    shift_x = -8.0
-    shift_y =  8.0
-    shift_z = -12.0
+    shift_x = 0.0
+    shift_y = 0.0
+    shift_z = 0.0
 
     ix = nx//2 - 1 + int(round(shift_x / vx)) # we start with 0 for X
     iy = ny//2 - 1 + int(round(shift_y / vy)) # we start with 0 for Y
