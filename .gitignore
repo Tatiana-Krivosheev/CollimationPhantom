@@ -33,3 +33,6 @@ run/
 
 # VS Code
 .browse.VC.*
+
+# MacOS X specific ignore
+.DS_Store
