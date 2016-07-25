@@ -233,13 +233,13 @@ def plot3d_XY(xx, yy, zz):
 
 if __name__ == "__main__":
 
-    vx, vy, vz, nx, ny, nz = read_phantom_head("./phantom.hed")
+    vx, vy, vz, nx, ny, nz = read_phantom_head("Results/phantom.hed")
     print("==== PHANTOM ====")
     print(vx, vy, vz)
     print(nx, ny, nz)
     print("")
 
-    dout = read_dose_out("./dose_z_6mm.out")
+    dout = read_dose_out("Results/dose_z_6mm.out")
     print(len(dout))
 
     dose = make_dose_array(nx, ny, nz, dout)
@@ -248,7 +248,7 @@ if __name__ == "__main__":
 
     shift_x = 0.0
     shift_y = 0.0
-    shift_z = 0.0
+    shift_z = 6.0
 
     ix = nx//2 - 1 + int(round(shift_x / vx)) # we start with 0 for X
     iy = ny//2 - 1 + int(round(shift_y / vy)) # we start with 0 for Y
