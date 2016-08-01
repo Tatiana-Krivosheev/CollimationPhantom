@@ -80,7 +80,7 @@ class Source : public G4VUserPrimaryGeneratorAction
 
     public: float src_angle() const
     {
-        return _iso_radius;
+        return _src_angle;
     }
 
     public: float polar_start() const
