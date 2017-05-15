@@ -2,7 +2,7 @@
 ///
 ///  (Description)
 ///  Run Class is for accumulating scored quantities which is
-///  scored using G4MutiFunctionalDetector and G4VPrimitiveScorer.
+///  scored using G4MultiFunctionalDetector and G4VPrimitiveScorer.
 ///  Accumulation is done using G4THitsMap object.
 ///
 ///  The constructor Run(const std::vector<std::string> mfdName)
@@ -46,16 +46,16 @@ Run::Run(const std::vector<std::string> mfdName):
 Run::~Run()
 {
     //--- Clear HitsMap for RUN
-    int Nmap = _RunMap.size();
-    for ( int i = 0; i != Nmap; ++i)
+    size_t Nmap = _runMap.size();
+    for ( size_t i = 0; i != Nmap; ++i)
     {
-        if( _RunMap[i] )
-            _RunMap[i]->clear();
+        if( _runMap[i] != nullptr )
+            _runMap[i]->clear();
     }
 
     _CollName.clear();
     _CollID.clear();
-    _RunMap.clear();
+    _runMap.clear();
 }
 
 void Run::ConstructMFD(const std::vector<std::string>& mfdName)
@@ -97,7 +97,7 @@ void Run::ConstructMFD(const std::vector<std::string>& mfdName)
                     // And, creates new G4THitsMap for accumulating quantities during RUN.
                     _CollName.push_back(fullCollectionName);
                     _CollID.push_back(collectionID);
-                    _RunMap.push_back(new G4THitsMap<double>(detName, collectionName));
+                    _runMap.push_back(new G4THitsMap<double>(detName, collectionName));
                 }
                 else
                 {
@@ -140,7 +140,7 @@ void Run::RecordEvent(const G4Event* aEvent)
         if ( EvtMap )
         {
             //=== Sum up HitsMap of this event to HitsMap of RUN.===
-            *_RunMap[i] += *EvtMap;
+            *_runMap[i] += *EvtMap;
         }
     }
 
@@ -154,18 +154,18 @@ void Run::Merge(const G4Run* aRun)
     copy(_CollName, localRun->_CollName);
     copy(_CollID, localRun->_CollID);
 
-    unsigned ncopies = copy(_RunMap, localRun->_RunMap);
+    unsigned ncopies = copy(_runMap, localRun->_runMap);
 
     // copy function returns the fRunMap size if all data is copied
     // so this loop isn't executed the first time around
 
     G4cout << "Run :: Num copies = " << ncopies << G4endl;
 
-    for(unsigned i = ncopies; i != _RunMap.size(); ++i)
+    for(unsigned i = ncopies; i != _runMap.size(); ++i)
     {
-        auto prm = _RunMap[i];
+        auto prm = _runMap[i];
         if (prm) {
-            auto lrm = localRun->_RunMap[i];
+            auto lrm = localRun->_runMap[i];
             if (lrm)
                 *prm += *lrm;
         }
@@ -195,7 +195,7 @@ G4THitsMap<double>* Run::GetHitsMap(const std::string& fullName) const
     {
         if ( _CollName[i] == fullName )
         {
-            return _RunMap[i];
+            return _runMap[i];
         }
     }
 

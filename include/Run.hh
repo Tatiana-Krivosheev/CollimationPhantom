@@ -22,7 +22,7 @@ class Run : public G4Run
 #pragma region Data
     private: std::vector<std::string>          _CollName;
     private: std::vector<int>                  _CollID;
-    private: std::vector<G4THitsMap<double>*>  _RunMap;
+    private: std::vector<G4THitsMap<double>*>  _runMap;
 #pragma endregion
 
 #pragma region Ctor/Dtor/ops
@@ -39,22 +39,23 @@ class Run : public G4Run
     // Access methods for scoring information.
     // - Number of HitsMap for this RUN.
     //   This is equal to number of collections.
-    int GetNumberOfHitsMap() const
+    public: size_t GetNumberOfHitsMap() const
     {
-        return _RunMap.size();
+        return _runMap.size();
     }
 
     // - Get HitsMap of this RUN.
     //   by sequential number, by multifucntional name and collection name,
     //   and by collection name with full path.
-    G4THitsMap<double>* GetHitsMap(int i) const
+    public: G4THitsMap<double>* GetHitsMap(size_t i) const
     {
-        return _RunMap[i];
+        return _runMap[i];
     }
 
-    G4THitsMap<double>* GetHitsMap(const std::string& detName, const std::string& colName) const;
+    public: G4THitsMap<double>* GetHitsMap(const std::string& detName,
+                                           const std::string& colName) const;
 
-    G4THitsMap<double>* GetHitsMap(const std::string& fullName) const;
+    public: G4THitsMap<double>* GetHitsMap(const std::string& fullName) const;
 
     void ConstructMFD(const std::vector<std::string>&);
 
@@ -65,7 +66,8 @@ class Run : public G4Run
 //==========================================================================
 //          Generic Functions to help with merge
 //==========================================================================
-template <typename T> inline void copy(std::vector<T>& main, const std::vector<T>& data)
+template <typename T> inline void
+copy(std::vector<T>& main, const std::vector<T>& data)
 {
     for(auto i = main.size(); i != data.size(); ++i)
     {
@@ -73,7 +75,8 @@ template <typename T> inline void copy(std::vector<T>& main, const std::vector<T
     }
 }
 
-template <typename T> inline unsigned copy(std::vector<T*>& main, const std::vector<T*>& data)
+template <typename T> inline size_t
+copy(std::vector<T*>& main, const std::vector<T*>& data)
 {
     auto size_diff = data.size() - main.size();
     for(auto i = main.size(); i != data.size(); ++i)
@@ -83,7 +86,8 @@ template <typename T> inline unsigned copy(std::vector<T*>& main, const std::vec
     return size_diff;
 }
 
-template <typename T> inline std::ostream& print(const std::vector<T>& data, std::ostream& os)
+template <typename T> inline std::ostream&
+print(const std::vector<T>& data, std::ostream& os)
 {
     os << std::endl;
     for(size_t i = 0; i != data.size(); ++i)
@@ -94,7 +98,8 @@ template <typename T> inline std::ostream& print(const std::vector<T>& data, std
     return os;
 }
 
-template <typename T> inline std::ostream& print(const std::vector<T>& data)
+template <typename T> inline std::ostream&
+print(const std::vector<T>& data)
 {
     return print(data, std::cout);
 }

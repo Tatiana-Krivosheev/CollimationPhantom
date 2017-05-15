@@ -119,7 +119,7 @@ void RunAction::EndOfRunAction(const G4Run* aRun)
             G4THitsMap<G4double>* DoseDeposit = re02Run->GetHitsMap(_SDName[i]+"/DoseDeposit");
 
             G4cout << "=============================================================" << G4endl;
-            G4cout << " Number of event processed : " << aRun->GetNumberOfEvent() << G4endl;
+            G4cout << " Number of event processed : " << aRun->GetNumberOfEvent()     << G4endl;
             G4cout << "=============================================================" << G4endl;
 
             std::ofstream fileout;
